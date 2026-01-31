@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bauhaus Clock</title>
+    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <button id="theme-toggle" aria-label="Toggle Dark Mode">
+        <span class="icon moon">☾</span>
+        <span class="icon sun">☀</span>
+    </button>
+
+    <div id="controls-container">
+        <div id="timezone-picker" class="hidden">
+            <input type="text" id="timezone-search" placeholder="Search timezone..." autofocus>
+            <ul id="timezone-list"></ul>
+        </div>
+        <button id="add-clock-btn" aria-label="Add Clock" class="fab">
+            <span class="plus-icon">+</span>
+        </button>
+    </div>
+
+    <main id="clock-grid">
+        <!-- Clocks will be injected here -->
+    </main>
+
+    <template id="clock-template">
+        <div class="clock-card">
+            <div class="clock-controls">
+                <!-- Home Icon -->
+                <svg class="home-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L2 12H5V20H19V12H22L12 3Z" fill="currentColor" />
+                </svg>
+                <!-- Remove Icon: Bauhaus Cross (Geometric) -->
+                <button class="remove-btn" title="Remove Clock">
+                    <svg class="remove-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" />
+                        <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                </button>
+            </div>
+            <div class="clock-container">
+                <!-- ... rest of template ... -->
+                <div class="clock-face">
+                    <div class="marker hour-1"></div>
+                    <div class="marker hour-2"></div>
+                    <div class="marker hour-3"></div>
+                    <div class="marker hour-4"></div>
+                    <div class="marker hour-5"></div>
+                    <div class="marker hour-6"></div>
+                    <div class="marker hour-7"></div>
+                    <div class="marker hour-8"></div>
+                    <div class="marker hour-9"></div>
+                    <div class="marker hour-10"></div>
+                    <div class="marker hour-11"></div>
+                    <div class="marker hour-12"></div>
+
+                    <div class="date-display"></div>
+
+                    <div class="hand hour-hand"></div>
+                    <div class="hand minute-hand"></div>
+                    <div class="hand second-hand"></div>
+                    <div class="center-dot"></div>
+                </div>
+                <div class="timezone-display"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Dialog removed, replaced by custom picker in controls-container -->
+
+    <script src="script.js?v=2"></script>
+</body>
+
+</html>
