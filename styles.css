@@ -287,7 +287,7 @@ body {
 /* Day/Night specific overrides */
 .clock-card.day .clock-face {
     background-color: #FFFFFF;
-    border-color: #1A1A1A;
+    border-color: var(--clock-border);
 }
 
 .clock-card.day .digital-time {
@@ -297,7 +297,7 @@ body {
 
 .clock-card.night .clock-face {
     background-color: #1E1E1E;
-    border-color: #F0F0F0;
+    border-color: var(--clock-border);
 }
 
 .clock-card.night .digital-time {
@@ -619,4 +619,339 @@ body {
 
 #clock-grid[data-clock-count="1"] .timezone-display {
     margin-top: 3cqi;
+}
+
+/* Delete Overlay */
+.delete-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
+}
+
+.delete-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.delete-question {
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.delete-actions button {
+    background: none;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.8rem 2rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.delete-actions .confirm-delete:hover {
+    background-color: var(--bauhaus-red);
+    border-color: var(--bauhaus-red);
+    color: white;
+}
+
+.delete-actions .cancel-delete:hover {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
+
+#mce-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 100;
+    background: var(--bg-color);
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+#mce-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 100;
+    background: var(--bg-color);
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 48px;
+    /* High radius for pill shape */
+    height: 48px;
+    width: 48px;
+    /* Default circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px var(--shadow);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#mce-btn .reset-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: none;
+    /* Hidden by default */
+}
+
+#mce-btn.widened {
+    width: 200px;
+    /* Increased slightly */
+    padding: 0 1.2rem;
+    background-color: var(--bauhaus-red);
+    color: white;
+    border-color: var(--bauhaus-red);
+}
+
+#mce-btn.widened .reset-text {
+    display: block;
+}
+
+#mce-btn:hover {
+    transform: scale(1.05);
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
+
+#mce-btn.widened:hover {
+    background-color: #b73a3f;
+    /* Darker red */
+    color: white;
+}
+
+/* Utilities */
+.hidden {
+    display: none !important;
+}
+
+/* Inline MCE controls - Absolute to prevent shifting */
+#mce-inline-controls {
+    position: absolute;
+    top: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    /* Stack instruction and input */
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.2rem 2.5rem;
+    background-color: var(--bg-color);
+    border: 3px solid var(--text-color);
+    /* Bolder */
+    border-radius: 8px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.mce-instruction {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    color: var(--bauhaus-blue);
+}
+
+.mce-input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+#mce-inline-controls input {
+    padding: 0.8rem 1.2rem;
+    border: 2px solid var(--text-color);
+    background: var(--clock-face);
+    color: var(--text-color);
+    font-family: inherit;
+    font-weight: 500;
+    width: 280px;
+    border-radius: 4px;
+}
+
+#mce-inline-controls button {
+    padding: 0.8rem 1.5rem;
+    background-color: var(--bauhaus-blue);
+    color: white;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+#mce-inline-controls button:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+}
+
+#mce-inline-controls.hidden {
+    display: none !important;
+}
+
+/* Get Script Utility */
+.get-script-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+}
+
+.get-script-btn {
+    background: none;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem 1.2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    border-radius: 48px;
+    /* Rounded pill shape */
+    transition: all 0.2s;
+    opacity: 0.9;
+}
+
+.get-script-btn:hover {
+    opacity: 1;
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
+
+/* Script Output Panel at bottom */
+
+#script-output {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+    box-shadow: 0 -10px 30px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.script-output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#script-type-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    color: var(--bauhaus-blue);
+}
+
+#close-script-panel {
+    background: none;
+    border: none;
+    color: var(--bg-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 0.2s;
+}
+
+#close-script-panel:hover {
+    transform: scale(1.2) rotate(90deg);
+}
+
+.script-content {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+#script-text {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    flex: 1;
+    word-break: break-all;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+#copy-script-btn {
+    background-color: var(--bauhaus-blue);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+#copy-script-btn:hover {
+    background-color: #3b6bd6;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+#script-output.hidden {
+    display: none !important;
 }

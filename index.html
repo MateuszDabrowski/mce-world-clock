@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bauhaus Clock</title>
-    <link rel="stylesheet" href="styles.css?v=28">
+    <link rel="stylesheet" href="styles.css?v=45">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
@@ -31,10 +31,39 @@
             <span class="plus-icon">+</span>
         </button>
     </div>
+    <button id="mce-btn" aria-label="MCE Functions">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+            <path
+                d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+        </svg>
+        <span class="reset-text">RESET TO NOW()</span>
+    </button>
+
+    <!-- MCE Inline Controls -->
+    <div id="mce-inline-controls" class="hidden">
+        <p class="mce-instruction">Insert Salesforce Marketing Cloud Engagement system date</p>
+        <div class="mce-input-group">
+            <input type="text" id="datetime-input" placeholder="e.g. Dec 23 2020 2:31PM">
+            <button id="apply-time-btn">APPLY</button>
+        </div>
+        <span id="mce-feedback"></span>
+    </div>
 
     <main id="clock-grid">
         <!-- Clocks will be injected here -->
     </main>
+
+    <!-- Inline Script Output Panel -->
+    <div id="script-output" class="hidden">
+        <div class="script-output-header">
+            <span id="script-type-label">SQL SNIPPET</span>
+            <button id="close-script-panel" aria-label="Close">✕</button>
+        </div>
+        <div class="script-content">
+            <code id="script-text"></code>
+            <button id="copy-script-btn">COPY</button>
+        </div>
+    </div>
 
     <template id="clock-template">
         <div class="clock-card">
@@ -88,12 +117,26 @@
                 </div>
                 <div class="timezone-display"></div>
             </div>
+
+            <div class="get-script-container">
+                <button class="get-script-btn">GET SCRIPT</button>
+            </div>
+
+            <div class="delete-overlay hidden">
+                <div class="delete-content">
+                    <div class="delete-question">Delete?</div>
+                    <div class="delete-actions">
+                        <button class="confirm-delete">YES</button>
+                        <button class="cancel-delete">NO</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </template>
 
     <!-- Dialog removed, replaced by custom picker in controls-container -->
 
-    <script src="script.js?v=18"></script>
+    <script src="script.js?v=37"></script>
 </body>
 
 </html>
