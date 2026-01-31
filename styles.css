@@ -79,6 +79,100 @@ body {
     display: none;
 }
 
+#display-toggle {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    /* MOVED TO LEFT */
+    z-index: 100;
+    background: none;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+#display-toggle:hover {
+    transform: scale(1.1);
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
+
+#display-toggle .digital {
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* Visibility States for Toggles */
+.hidden {
+    display: none !important;
+}
+
+/* Clock Faces */
+.analog-face,
+.digital-face {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    background-color: transparent;
+    /* Inherit from .clock-face parent */
+}
+
+.clock-face {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* Prevent content overflow */
+    border-radius: 50%;
+}
+
+.clock-face {
+    /* ... existing props ... */
+    overflow: hidden;
+    /* Prevent content overflow */
+}
+
+.digital-face {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.digital-time {
+    font-size: 5rem;
+    /* Large time */
+    font-weight: 700;
+    color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.digital-date {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--bauhaus-red);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Layout Adjustments for Digital Mode */
+/* When digital is active, we might want different control/timezone spacing?
+   No, layout should remain consistent. */
+
 #clock-grid {
     display: grid;
     /* responsive columns */
@@ -196,9 +290,19 @@ body {
     border-color: #1A1A1A;
 }
 
+.clock-card.day .digital-time {
+    color: #1A1A1A;
+    /* Dark text on light dial */
+}
+
 .clock-card.night .clock-face {
     background-color: #1E1E1E;
     border-color: #F0F0F0;
+}
+
+.clock-card.night .digital-time {
+    color: #F0F0F0;
+    /* Light text on dark dial */
 }
 
 /* Ensure markers contrast in night mode if needed */

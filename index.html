@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bauhaus Clock</title>
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=28">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
@@ -15,6 +15,11 @@
     <button id="theme-toggle" aria-label="Toggle Dark Mode">
         <span class="icon moon">☾</span>
         <span class="icon sun">☀</span>
+    </button>
+
+    <button id="display-toggle" aria-label="Toggle Analog/Digital">
+        <span class="icon analog">⏱</span>
+        <span class="icon digital">12:34</span>
     </button>
 
     <div id="controls-container">
@@ -54,25 +59,32 @@
             <div class="clock-container">
                 <!-- ... rest of template ... -->
                 <div class="clock-face">
-                    <div class="marker hour-1"></div>
-                    <div class="marker hour-2"></div>
-                    <div class="marker hour-3"></div>
-                    <div class="marker hour-4"></div>
-                    <div class="marker hour-5"></div>
-                    <div class="marker hour-6"></div>
-                    <div class="marker hour-7"></div>
-                    <div class="marker hour-8"></div>
-                    <div class="marker hour-9"></div>
-                    <div class="marker hour-10"></div>
-                    <div class="marker hour-11"></div>
-                    <div class="marker hour-12"></div>
+                    <div class="analog-face">
+                        <div class="marker hour-1"></div>
+                        <div class="marker hour-2"></div>
+                        <div class="marker hour-3"></div>
+                        <div class="marker hour-4"></div>
+                        <div class="marker hour-5"></div>
+                        <div class="marker hour-6"></div>
+                        <div class="marker hour-7"></div>
+                        <div class="marker hour-8"></div>
+                        <div class="marker hour-9"></div>
+                        <div class="marker hour-10"></div>
+                        <div class="marker hour-11"></div>
+                        <div class="marker hour-12"></div>
 
-                    <div class="date-display"></div>
+                        <div class="date-display"></div>
 
-                    <div class="hand hour-hand"></div>
-                    <div class="hand minute-hand"></div>
-                    <div class="hand second-hand"></div>
-                    <div class="center-dot"></div>
+                        <div class="hand hour-hand"></div>
+                        <div class="hand minute-hand"></div>
+                        <div class="hand second-hand"></div>
+                        <div class="center-dot"></div>
+                    </div>
+
+                    <div class="digital-face hidden">
+                        <div class="digital-time">--:--</div>
+                        <div class="digital-date">DATE</div>
+                    </div>
                 </div>
                 <div class="timezone-display"></div>
             </div>
@@ -81,7 +93,7 @@
 
     <!-- Dialog removed, replaced by custom picker in controls-container -->
 
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=18"></script>
 </body>
 
 </html>
