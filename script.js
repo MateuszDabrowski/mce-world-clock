@@ -15,12 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const datetimeInput = document.getElementById('datetime-input');
     const applyTimeBtn = document.getElementById('apply-time-btn');
     const mceFeedback = document.getElementById('mce-feedback');
+    const mceOptionsList = document.getElementById('mce-options-list');
+    const mceOpts = document.querySelectorAll('.mce-opt');
+    const mceResetBtn = document.getElementById('mce-reset-btn');
+    const notificationToast = document.getElementById('notification-toast');
+
 
     // Script Output Panel
     const scriptOutput = document.getElementById('script-output');
-    const scriptText = document.getElementById('script-text');
     const closeScriptBtn = document.getElementById('close-script-panel');
-    const copyScriptBtn = document.getElementById('copy-script-btn');
+    const copyBtns = document.querySelectorAll('.copy-btn');
 
     if (closeScriptBtn) {
         closeScriptBtn.addEventListener('click', () => {
@@ -28,19 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (copyScriptBtn) {
-        copyScriptBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(scriptText.textContent).then(() => {
-                const originalText = copyScriptBtn.textContent;
-                copyScriptBtn.textContent = "COPIED!";
-                copyScriptBtn.style.backgroundColor = "var(--bauhaus-red)";
+    copyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.target;
+            const text = document.getElementById(targetId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = "COPIED!";
+                btn.classList.add('copied');
                 setTimeout(() => {
-                    copyScriptBtn.textContent = originalText;
-                    copyScriptBtn.style.backgroundColor = "var(--bauhaus-blue)";
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
                 }, 2000);
             });
         });
-    }
+    });
 
     // --- STATE & INITIALIZATION ---
     let clocks = JSON.parse(localStorage.getItem('clocks')) || [];
@@ -107,24 +113,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MCE CONVERTER LOGIC ---
     if (mceBtn) {
-        mceBtn.addEventListener('click', () => {
-            if (overrideTime) {
+        mceBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mceOptionsList.classList.toggle('hidden');
+            // Close other pickers if open
+            pickerContainer.classList.add('hidden');
+        });
+    }
+
+    // Handle MCE Menu Actions
+    mceOpts.forEach(opt => {
+        opt.addEventListener('click', () => {
+            const action = opt.dataset.action;
+            mceOptionsList.classList.add('hidden');
+
+            if (action === 'convert') {
+                mceInlineControls.classList.remove('hidden');
+                clockGrid.classList.add('mce-active'); // Add extra padding for scrolling
+                datetimeInput.focus();
+                if (mceResetBtn) mceResetBtn.classList.remove('hidden');
+            } else if (action === 'reset') {
                 resetToLive();
-            } else {
-                mceInlineControls.classList.toggle('hidden');
-                if (!mceInlineControls.classList.contains('hidden')) {
-                    datetimeInput.focus();
-                }
             }
+        });
+    });
+
+    // Close MCE picker when clicking outside
+    document.addEventListener('click', (e) => {
+        if (mceOptionsList && !mceOptionsList.contains(e.target) && e.target !== mceBtn) {
+            mceOptionsList.classList.add('hidden');
+        }
+    });
+
+    if (mceResetBtn) {
+        mceResetBtn.addEventListener('click', () => {
+            resetToLive();
         });
     }
 
     function resetToLive() {
         overrideTime = null;
         datetimeInput.value = "";
-        mceBtn.classList.remove('widened');
         mceInlineControls.classList.add('hidden');
+        clockGrid.classList.remove('mce-active'); // Remove extra padding
         mceFeedback.textContent = "";
+        if (mceResetBtn) mceResetBtn.classList.add('hidden');
         renderClocks();
         requestAnimationFrame(tick);
     }
@@ -144,6 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
             mceFeedback.textContent = "Invalid format.";
             mceFeedback.style.color = "var(--bauhaus-red)";
         } else {
+            // Save current scroll position and first clock position
+            const scrollY = window.scrollY;
+            const firstClock = clockGrid.querySelector('.clock-card');
+            const firstClockTop = firstClock ? firstClock.getBoundingClientRect().top : 0;
+
             // 2. We want the entered hours/minutes to represent Salesforce time (UTC-6)
             // We extract the YMD HM from the nominal date and construct a UTC date shifted by 6 hours
             const year = nominalDate.getFullYear();
@@ -157,14 +195,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // UTC = SalesforceTime + 6 hours
             overrideTime = new Date(Date.UTC(year, month, day, hour + 6, min, sec, ms));
 
-            mceBtn.classList.add('widened');
-
-            // USER REQUEST: Keep UI visible until Reset
-            // mceInlineControls.classList.remove('hidden'); // Ensure it stays open
-
             mceFeedback.textContent = "Locked to Salesforce (UTC-6)";
             mceFeedback.style.color = "var(--bauhaus-blue)";
+            clockGrid.classList.add('mce-active'); // Add extra padding for scrolling
+            if (mceResetBtn) mceResetBtn.classList.remove('hidden');
             renderClocks();
+
+            // Restore visual position by compensating for layout changes
+            requestAnimationFrame(() => {
+                const firstClockAfter = clockGrid.querySelector('.clock-card');
+                if (firstClockAfter) {
+                    const firstClockTopAfter = firstClockAfter.getBoundingClientRect().top;
+                    const offset = firstClockTopAfter - firstClockTop;
+                    window.scrollTo(0, scrollY + offset);
+                }
+            });
         }
     });
 
@@ -259,7 +304,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTimezoneList(filter = "") {
         timezoneList.innerHTML = '';
         const lowerFilter = filter.toLowerCase();
+        // Get currently used timezones to filter them out
+        const usedTimezones = clocks.map(c => c.timezone);
+
         processedTimezones.forEach(data => {
+            // Skip if timezone is already added
+            if (usedTimezones.includes(data.id)) return;
+
             if (data.searchStr.includes(lowerFilter)) {
                 const li = document.createElement('li');
                 li.className = 'timezone-option';
@@ -286,7 +337,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addClockBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (clocks.length >= 8) { alert('Max 8 clocks allowed.'); return; }
+        if (clocks.length >= 8) {
+            showNotification('MAX 8 CLOCKS ALLOWED');
+            return;
+        }
         if (pickerContainer.classList.contains('hidden')) openPicker();
         else closePicker();
     });
@@ -376,27 +430,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Simplified Get Script Logic - Direct SQL output
+            // Simplified Get Script Logic - Direct Multi-Language output (DST Aware Refined)
             getScriptBtn.addEventListener('click', () => {
                 const iana = clockData.timezone;
                 const windowsName = windowsTimezoneMap[iana] || 'Target Standard Time';
+                const now = overrideTime || new Date();
+                const isLocal = clockData.isLocal;
+                const isUtc = iana === 'UTC';
 
-                // Get short timezone name (e.g. UTC, CEST, PST)
+                // 1. Calculate Offsets for Winter (Jan) and Summer (Jul)
+                const currentYear = now.getFullYear();
+                const jan = new Date(currentYear, 0, 1);
+                const jul = new Date(currentYear, 6, 1);
+
+                const systemOffset = -360; // SFMC is fixed UTC-6
+
+                const offWinter = getOffsetMinutes(iana, jan);
+                const offSummer = getOffsetMinutes(iana, jul);
+
+                const offsetWinterHours = (offWinter - systemOffset) / 60;
+                const offsetSummerHours = (offSummer - systemOffset) / 60;
+
+                // 2. Get Timezone Shortcut for Alias
                 let tzShort = 'TZ';
                 try {
                     const formatter = new Intl.DateTimeFormat('en-US', {
                         timeZone: iana,
                         timeZoneName: 'short'
                     });
-                    tzShort = formatter.formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value || 'TZ';
+                    tzShort = formatter.formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'TZ';
                 } catch (e) {}
 
-                // SANITIZE: Remove characters illegal in SQL column aliases (+ -> plus, - -> minus)
                 const sanitizedTz = tzShort.replace(/\+/g, 'plus').replace(/-/g, 'minus');
 
-                const sqlSnippet = `[DateColumn] AT TIME ZONE 'Central America Standard Time' AT TIME ZONE '${windowsName}' AS DateColumn_${sanitizedTz}`;
+                // 3. Generate Snippets
+                const sqlSnippet = `[DateColumn] AT TIME ZONE 'Central America Standard Time' AT TIME ZONE '${windowsName}' AS [DateColumn_${sanitizedTz}]`;
 
-                scriptText.textContent = sqlSnippet;
+                let ampSnippet, ssjsSnippet;
+
+                if (isLocal) {
+                    ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = SystemDateToLocalDate(@date)\n]%%`;
+                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var convertedDate = Platform.Function.SystemDateToLocalDate(date);\n</script>`;
+                } else if (isUtc) {
+                    ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = DateAdd(@date, 6, 'H')\n]%%`;
+                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn'); \n    var convertedDate = Platform.Function.DateAdd(date, 6, 'H');\n</script>`;
+                } else {
+                    // Logic with User-Defined DST bounds
+                    ampSnippet = `%%[\n    VAR @date, @summerTimeStart, @summerTimeEnd, @winterOffset, @summerOffset, @offset, @convertedDate\n    SET @date = [DateColumn]\n    SET @summerTimeStart = '${currentYear}-03-30' /* UPDATE TO ACTUAL */\n    SET @summerTimeEnd = '${currentYear}-10-26'   /* UPDATE TO ACTUAL */\n    \n    SET @winterOffset = ${offsetWinterHours}\n    SET @summerOffset = ${offsetSummerHours}\n    \n    IF @date >= @summerTimeStart AND @date <= @summerTimeEnd THEN\n        SET @offset = @summerOffset\n    ELSE\n        SET @offset = @winterOffset\n    ENDIF\n    \n    SET @convertedDate = DateAdd(@date, @offset, 'H')\n]%%`;
+
+                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var summerTimeStart = new Date('${currentYear}-03-30'); // UPDATE TO ACTUAL\n    var summerTimeEnd = new Date('${currentYear}-10-26');   // UPDATE TO ACTUAL\n    \n    var offset = (date >= summerTimeStart && date <= summerTimeEnd) ? ${offsetSummerHours} : ${offsetWinterHours};\n    var convertedDate = Platform.Function.DateAdd(date, offset, 'H');\n</script>`;
+                }
+
+                // 4. Populate UI
+                document.getElementById('sql-text').textContent = sqlSnippet;
+                document.getElementById('ampscript-text').textContent = ampSnippet;
+                document.getElementById('ssjs-text').textContent = ssjsSnippet;
+
                 scriptOutput.classList.remove('hidden');
             });
 
@@ -412,7 +501,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addClock(timezone) {
-        if (clocks.length >= 8) { alert('Max 8 clocks allowed.'); return; }
+        if (clocks.length >= 8) {
+            showNotification('MAX 8 CLOCKS ALLOWED');
+            return;
+        }
         clocks.push({ timezone, isLocal: false });
         saveClocks();
         renderClocks();
@@ -514,6 +606,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!overrideTime) {
             requestAnimationFrame(tick);
         }
+    }
+
+    // --- UTILS ---
+    let toastTimeout;
+    function showNotification(msg) {
+        if (!notificationToast) return;
+        notificationToast.textContent = msg;
+        notificationToast.classList.remove('hidden');
+
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            notificationToast.classList.add('hidden');
+        }, 3000);
     }
 
     // INITIAL STARTUP

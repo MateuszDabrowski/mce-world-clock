@@ -5,13 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bauhaus Clock</title>
-    <link rel="stylesheet" href="styles.css?v=45">
+    <link rel="stylesheet" href="styles.css?v=61">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
+    <div id="notification-toast" class="hidden"></div>
+    <a href="https://mateuszdabrowski.pl" target="_blank" rel="noopener noreferrer" id="logo-link">
+        <img src="logo.png" alt="Mateusz Dabrowski" id="logo">
+    </a>
+
     <button id="theme-toggle" aria-label="Toggle Dark Mode">
         <span class="icon moon">☾</span>
         <span class="icon sun">☀</span>
@@ -31,13 +36,62 @@
             <span class="plus-icon">+</span>
         </button>
     </div>
-    <button id="mce-btn" aria-label="MCE Functions">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-            <path
-                d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-        </svg>
-        <span class="reset-text">RESET TO NOW()</span>
-    </button>
+    <div id="mce-container">
+        <ul id="mce-options-list" class="hidden">
+            <li id="mce-opt-convert" class="mce-opt" data-action="convert">Convert MCE System Dates</li>
+        </ul>
+        <button id="mce-btn" aria-label="MCE Functions">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                <path
+                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+            </svg>
+        </button>
+        <button id="mce-reset-btn" class="hidden">
+            RESET TO NOW()
+        </button>
+    </div>
+
+
+    <main id="clock-grid">
+        <!-- Clocks will be injected here -->
+    </main>
+
+    <!-- Inline Script Output Panel -->
+    <div id="script-output" class="hidden">
+        <div class="script-output-header">
+            <span>MCE CONVERSION SNIPPETS</span>
+            <button id="close-script-panel" aria-label="Close">✕</button>
+        </div>
+
+        <div class="script-grid">
+            <!-- SQL Section -->
+            <div class="script-section">
+                <div class="section-label">SFMC SQL</div>
+                <div class="script-content">
+                    <code id="sql-text"></code>
+                    <button class="copy-btn" data-target="sql-text">COPY</button>
+                </div>
+            </div>
+
+            <!-- AMPScript Section -->
+            <div class="script-section">
+                <div class="section-label">AMPSCRIPT</div>
+                <div class="script-content">
+                    <code id="ampscript-text"></code>
+                    <button class="copy-btn" data-target="ampscript-text">COPY</button>
+                </div>
+            </div>
+
+            <!-- SSJS Section -->
+            <div class="script-section">
+                <div class="section-label">SSJS</div>
+                <div class="script-content">
+                    <code id="ssjs-text"></code>
+                    <button class="copy-btn" data-target="ssjs-text">COPY</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MCE Inline Controls -->
     <div id="mce-inline-controls" class="hidden">
@@ -47,22 +101,6 @@
             <button id="apply-time-btn">APPLY</button>
         </div>
         <span id="mce-feedback"></span>
-    </div>
-
-    <main id="clock-grid">
-        <!-- Clocks will be injected here -->
-    </main>
-
-    <!-- Inline Script Output Panel -->
-    <div id="script-output" class="hidden">
-        <div class="script-output-header">
-            <span id="script-type-label">SQL SNIPPET</span>
-            <button id="close-script-panel" aria-label="Close">✕</button>
-        </div>
-        <div class="script-content">
-            <code id="script-text"></code>
-            <button id="copy-script-btn">COPY</button>
-        </div>
     </div>
 
     <template id="clock-template">
@@ -115,9 +153,8 @@
                         <div class="digital-date">DATE</div>
                     </div>
                 </div>
-                <div class="timezone-display"></div>
             </div>
-
+            <div class="timezone-display"></div>
             <div class="get-script-container">
                 <button class="get-script-btn">GET SCRIPT</button>
             </div>
@@ -136,7 +173,7 @@
 
     <!-- Dialog removed, replaced by custom picker in controls-container -->
 
-    <script src="script.js?v=37"></script>
+    <script src="script.js?v=59"></script>
 </body>
 
 </html>
