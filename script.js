@@ -214,50 +214,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- TIMEZONE DATA ---
-    const majorTimezones = [
-        'UTC',
-        'Pacific/Midway', 'Pacific/Honolulu', 'America/Anchorage', 'America/Los_Angeles',
-        'America/Denver', 'America/Chicago', 'America/New_York', 'America/Sao_Paulo',
-        'Atlantic/Azores', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Warsaw',
-        'Europe/Moscow', 'Africa/Cairo', 'Africa/Johannesburg', 'Asia/Dubai',
-        'Asia/Karachi', 'Asia/Kolkata', 'Asia/Dhaka', 'Asia/Bangkok',
-        'Asia/Shanghai', 'Asia/Tokyo', 'Australia/Sydney', 'Pacific/Auckland',
-        'Etc/GMT+6'
+    // --- TIMEZONE DATA ---
+    const timezoneDatabase = [
+        { iana: 'Etc/GMT+12', windows: 'Dateline Standard Time', label: 'International Date Line West' },
+        { iana: 'Etc/GMT+11', windows: 'UTC-11', label: 'Coordinated Universal Time-11' },
+        { iana: 'Pacific/Honolulu', windows: 'Hawaiian Standard Time', label: 'USA / Honolulu' },
+        { iana: 'America/Anchorage', windows: 'Alaskan Standard Time', label: 'USA / Anchorage' },
+        { iana: 'America/Los_Angeles', windows: 'Pacific Standard Time', label: 'USA / Los Angeles' },
+        { iana: 'America/Denver', windows: 'Mountain Standard Time', label: 'USA / Denver' },
+        { iana: 'America/Phoenix', windows: 'US Mountain Standard Time', label: 'USA / Phoenix' },
+        { iana: 'America/Chicago', windows: 'Central Standard Time', label: 'USA / Chicago' },
+        { iana: 'America/Regina', windows: 'Canada Central Standard Time', label: 'Canada / Regina' },
+        { iana: 'America/New_York', windows: 'Eastern Standard Time', label: 'USA / New York' },
+        { iana: 'America/Halifax', windows: 'Atlantic Standard Time', label: 'Canada / Halifax' },
+        { iana: 'America/St_Johns', windows: 'Newfoundland Standard Time', label: 'Canada / St. Johns' },
+        { iana: 'America/Sao_Paulo', windows: 'E. South America Standard Time', label: 'Brazil / Sao Paulo' },
+        { iana: 'America/Bogota', windows: 'SA Pacific Standard Time', label: 'Colombia / Bogota' },
+        { iana: 'America/Argentina/Buenos_Aires', windows: 'Argentina Standard Time', label: 'Argentina / Buenos Aires' },
+        { iana: 'Atlantic/Azores', windows: 'Azores Standard Time', label: 'Portugal / Azores' },
+        { iana: 'Atlantic/Cape_Verde', windows: 'Cape Verde Standard Time', label: 'Cape Verde / Praia' },
+        { iana: 'Europe/London', windows: 'GMT Standard Time', label: 'UK / London' },
+        { iana: 'Europe/Paris', windows: 'Romance Standard Time', label: 'France / Paris' },
+        { iana: 'Europe/Berlin', windows: 'W. Europe Standard Time', label: 'Germany / Berlin' },
+        { iana: 'Europe/Warsaw', windows: 'Central European Standard Time', label: 'Poland / Warsaw' },
+        { iana: 'Europe/Athens', windows: 'GTB Standard Time', label: 'Greece / Athens' },
+        { iana: 'Europe/Moscow', windows: 'Russian Standard Time', label: 'Russia / Moscow' },
+        { iana: 'Africa/Cairo', windows: 'Egypt Standard Time', label: 'Egypt / Cairo' },
+        { iana: 'Africa/Johannesburg', windows: 'South Africa Standard Time', label: 'South Africa / Johannesburg' },
+        { iana: 'Asia/Jerusalem', windows: 'Israel Standard Time', label: 'Israel / Jerusalem' },
+        { iana: 'Asia/Riyadh', windows: 'Arab Standard Time', label: 'Saudi Arabia / Riyadh' },
+        { iana: 'Asia/Dubai', windows: 'Arabian Standard Time', label: 'UAE / Dubai' },
+        { iana: 'Asia/Tehran', windows: 'Iran Standard Time', label: 'Iran / Tehran' },
+        { iana: 'Asia/Karachi', windows: 'Pakistan Standard Time', label: 'Pakistan / Karachi' },
+        { iana: 'Asia/Kolkata', windows: 'India Standard Time', label: 'India / Kolkata' },
+        { iana: 'Asia/Dhaka', windows: 'Bangladesh Standard Time', label: 'Bangladesh / Dhaka' },
+        { iana: 'Asia/Yekaterinburg', windows: 'Ekaterinburg Standard Time', label: 'Russia / Yekaterinburg' },
+        { iana: 'Asia/Bangkok', windows: 'SE Asia Standard Time', label: 'Thailand / Bangkok' },
+        { iana: 'Asia/Novosibirsk', windows: 'N. Central Asia Standard Time', label: 'Russia / Novosibirsk' },
+        { iana: 'Asia/Shanghai', windows: 'China Standard Time', label: 'China / Shanghai' },
+        { iana: 'Asia/Krasnoyarsk', windows: 'North Asia Standard Time', label: 'Russia / Krasnoyarsk' },
+        { iana: 'Asia/Irkutsk', windows: 'North Asia East Standard Time', label: 'Russia / Irkutsk' },
+        { iana: 'Asia/Tokyo', windows: 'Tokyo Standard Time', label: 'Japan / Tokyo' },
+        { iana: 'Asia/Yakutsk', windows: 'Yakutsk Standard Time', label: 'Russia / Yakutsk' },
+        { iana: 'Asia/Vladivostok', windows: 'Vladivostok Standard Time', label: 'Russia / Vladivostok' },
+        { iana: 'Asia/Magadan', windows: 'Magadan Standard Time', label: 'Russia / Magadan' },
+        { iana: 'Australia/Darwin', windows: 'AUS Central Standard Time', label: 'Australia / Darwin' },
+        { iana: 'Australia/Adelaide', windows: 'Cen. Australia Standard Time', label: 'Australia / Adelaide' },
+        { iana: 'Australia/Brisbane', windows: 'E. Australia Standard Time', label: 'Australia / Brisbane' },
+        { iana: 'Australia/Sydney', windows: 'AUS Eastern Standard Time', label: 'Australia / Sydney' },
+        { iana: 'Australia/Perth', windows: 'W. Australia Standard Time', label: 'Australia / Perth' },
+        { iana: 'Pacific/Guam', windows: 'West Pacific Standard Time', label: 'Guam / Hagatna' },
+        { iana: 'Pacific/Auckland', windows: 'New Zealand Standard Time', label: 'New Zealand / Auckland' },
+        { iana: 'Pacific/Tongatapu', windows: 'Tonga Standard Time', label: 'Tonga / Nuku\'alofa' },
+        { iana: 'Pacific/Fiji', windows: 'Fiji Standard Time', label: 'Fiji / Suva' },
+        { iana: 'Pacific/Pago_Pago', windows: 'UTC-11', label: 'Midway Island / Samoa' },
+        { iana: 'UTC', windows: 'UTC', label: 'UTC' },
+        { iana: 'Etc/GMT+6', windows: 'Central America Standard Time', label: 'Salesforce / MCE' }
     ];
-
-    const windowsTimezoneMap = {
-        'UTC': 'UTC',
-        'Pacific/Midway': 'UTC-11',
-        'Pacific/Honolulu': 'Hawaiian Standard Time',
-        'America/Anchorage': 'Alaskan Standard Time',
-        'America/Los_Angeles': 'Pacific Standard Time',
-        'America/Denver': 'Mountain Standard Time',
-        'America/Chicago': 'Central Standard Time',
-        'America/New_York': 'Eastern Standard Time',
-        'America/Sao_Paulo': 'E. South America Standard Time',
-        'Atlantic/Azores': 'Azores Standard Time',
-        'Europe/London': 'GMT Standard Time',
-        'Europe/Paris': 'Romance Standard Time',
-        'Europe/Berlin': 'W. Europe Standard Time',
-        'Europe/Warsaw': 'Central European Standard Time',
-        'Europe/Moscow': 'Russian Standard Time',
-        'Africa/Cairo': 'Egypt Standard Time',
-        'Africa/Johannesburg': 'South Africa Standard Time',
-        'Asia/Dubai': 'Arabian Standard Time',
-        'Asia/Karachi': 'Pakistan Standard Time',
-        'Asia/Kolkata': 'India Standard Time',
-        'Asia/Dhaka': 'Bangladesh Standard Time',
-        'Asia/Bangkok': 'SE Asia Standard Time',
-        'Asia/Shanghai': 'China Standard Time',
-        'Asia/Tokyo': 'Tokyo Standard Time',
-        'Australia/Sydney': 'AUS Eastern Standard Time',
-        'Pacific/Auckland': 'New Zealand Standard Time'
-    };
-
-    const customLabels = {
-        'UTC': 'UTC',
-        'Etc/GMT+6': 'Salesforce / MCE'
-    };
 
     function getOffsetMinutes(timeZone, referenceDate = new Date()) {
         try {
@@ -283,20 +296,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const processedTimezones = majorTimezones.map(tz => {
-        const offsetMins = getOffsetMinutes(tz);
+    const processedTimezones = timezoneDatabase.map(tz => {
+        const offsetMins = getOffsetMinutes(tz.iana);
         const sign = offsetMins >= 0 ? '+' : '-';
         const abs = Math.abs(offsetMins);
         const h = Math.floor(abs / 60).toString().padStart(2, '0');
         const m = (abs % 60).toString().padStart(2, '0');
         const offsetLabel = `GMT${sign}${h}:${m}`;
-        const city = tz.split('/').pop().replace(/_/g, ' ');
+
         return {
-            id: tz,
-            city: city,
+            id: tz.iana,
+            city: tz.label, // Using label as primary identifier for search/display logic
+            windows: tz.windows,
             offsetMins: offsetMins,
             offsetLabel: offsetLabel,
-            searchStr: (city + " " + tz + (customLabels[tz] || "")).toLowerCase()
+            searchStr: (tz.label + " " + tz.iana + " " + tz.windows).toLowerCase(),
+            original: tz
         };
     }).sort((a, b) => a.offsetMins - b.offsetMins);
 
@@ -314,8 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.searchStr.includes(lowerFilter)) {
                 const li = document.createElement('li');
                 li.className = 'timezone-option';
-                let label = customLabels[data.id] || data.id.replace(/_/g, ' ').split('/').join(' / ');
-                li.textContent = `${label} (${data.offsetLabel})`;
+                li.textContent = `${data.city} (${data.offsetLabel})`; // city is now the full label e.g. "Poland / Warsaw"
+                li.title = data.windows; // Tooltip with Windows Timezone Name
                 li.dataset.timezone = data.id;
                 li.addEventListener('click', () => {
                     addClock(data.id);
@@ -433,7 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Simplified Get Script Logic - Direct Multi-Language output (DST Aware Refined)
             getScriptBtn.addEventListener('click', () => {
                 const iana = clockData.timezone;
-                const windowsName = windowsTimezoneMap[iana] || 'Target Standard Time';
+                const tzEntry = timezoneDatabase.find(t => t.iana === iana);
+                const windowsName = tzEntry ? tzEntry.windows : 'Target Standard Time';
                 const now = overrideTime || new Date();
                 const isLocal = clockData.isLocal;
                 const isUtc = iana === 'UTC';
@@ -569,7 +585,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 digitalFace.querySelector('.digital-date').textContent = `${monthStr} ${dayStr}, ${yearStr}`;
             }
 
-            const displayName = customLabels[timezone] || timezone.replace(/_/g, ' ').split('/').join(' / ').toUpperCase();
+            // Find Label
+            const tzData = timezoneDatabase.find(t => t.iana === timezone);
+            const displayName = tzData ? tzData.label : timezone.replace(/_/g, ' ').split('/').join(' / ');
+
             const offset = getOffsetString(timezone, referenceDate);
             let season = 'WINTER';
             if (timezone === 'UTC' || timezone === 'Etc/GMT+6') {
