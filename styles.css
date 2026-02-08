@@ -836,35 +836,71 @@ body {
     position: absolute;
     bottom: 60px;
     left: 0;
-    background: var(--bg-color);
+    width: 300px;
+    max-height: 400px;
+    background-color: var(--bg-color);
     border: 2px solid var(--text-color);
     border-radius: 8px;
-    list-style: none;
-    padding: 0;
-    min-width: 240px;
-    box-shadow: 0 8px 24px var(--shadow);
-    z-index: 110;
-    animation: slideUpFade 0.3s ease-out;
+    box-shadow: 0 5px 20px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    z-index: 150;
     overflow: hidden;
+    transition: opacity 0.2s, transform 0.2s;
+    transform-origin: bottom left;
+}
+
+#mce-options-list.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+    visibility: hidden;
+}
+
+#mce-search {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-bottom: 2px solid var(--text-color);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    outline: none;
+}
+
+#mce-functions-list {
+    list-style: none;
+    overflow-y: auto;
+    flex-grow: 1;
+    max-height: 300px;
+    padding: 0;
+    margin: 0;
+}
+
+#mce-functions-list:focus-visible {
+    outline: 2px solid var(--bauhaus-blue);
 }
 
 .mce-opt {
-    padding: 0.8rem 1.2rem;
+    padding: 0.75rem 1rem;
     cursor: pointer;
+    border-bottom: 1px solid var(--shadow);
+    transition: background-color 0.1s;
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-color);
-    transition: background 0.1s;
-    border-bottom: 1px solid var(--shadow);
 }
 
 .mce-opt:last-child {
     border-bottom: none;
 }
 
-.mce-opt:hover {
-    background-color: var(--bauhaus-red);
+.mce-opt:hover,
+.mce-opt:focus-visible {
+    background-color: var(--bauhaus-blue);
     color: white;
+    outline: none;
 }
 
 @keyframes slideUpFade {
@@ -1127,4 +1163,113 @@ code {
 
 #script-output.hidden {
     display: none !important;
+}
+
+/* Script Timezone Picker */
+#script-timezone-picker {
+    position: fixed;
+    bottom: 10rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    background-color: var(--bg-color);
+    border: 3px solid var(--text-color);
+    border-radius: 8px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    min-width: 320px;
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUpFade 0.3s ease-out;
+}
+
+.picker-instruction {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    padding: 1rem;
+    color: var(--bauhaus-blue);
+    border-bottom: 2px solid var(--text-color);
+    text-align: center;
+}
+
+#script-timezone-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.script-tz-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: background-color 0.1s;
+    border-bottom: 1px solid var(--shadow);
+}
+
+.script-tz-option:last-child {
+    border-bottom: none;
+}
+
+.script-tz-option:hover,
+.script-tz-option:focus-visible {
+    background-color: var(--bauhaus-blue);
+    color: white;
+    outline: none;
+}
+
+#script-timezone-picker.hidden {
+    display: none !important;
+}
+
+/* Local Timezone Notice */
+#local-tz-notice {
+    background-color: rgba(246, 179, 85, 0.15);
+    /* Tint of bauhaus-orange */
+    border: 1px solid var(--bauhaus-orange);
+    padding: 1rem;
+    margin: 1rem 2rem 0;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    animation: fadeIn 0.3s;
+}
+
+#local-tz-notice.hidden {
+    display: none !important;
+}
+
+#local-tz-notice p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+#generate-dynamic-script {
+    background-color: transparent;
+    border: 2px solid var(--bauhaus-blue);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+#generate-dynamic-script:hover {
+    background-color: var(--bauhaus-blue);
+    color: white;
 }

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCE World Clock</title>
-    <link rel="stylesheet" href="styles.css?v=61">
+    <link rel="stylesheet" href="styles.css?v=64">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
@@ -39,9 +39,14 @@
         </button>
     </div>
     <div id="mce-container">
-        <ul id="mce-options-list" class="hidden" role="menu">
-            <li id="mce-opt-convert" class="mce-opt" data-action="convert" role="menuitem">Convert MCE System Dates</li>
-        </ul>
+        <div id="mce-options-list" class="hidden" role="menu">
+            <input type="text" id="mce-search" placeholder="Search MCE functions..." aria-label="Search MCE functions">
+            <ul id="mce-functions-list" role="listbox">
+                <li class="mce-opt" data-action="convert-date" role="menuitem">Convert MCE System Date</li>
+                <li class="mce-opt" data-action="generate-scripts" role="menuitem">Generate MCE Date Conversion Scripts
+                </li>
+            </ul>
+        </div>
         <button id="mce-btn" aria-label="MCE Functions" aria-haspopup="true" aria-expanded="false">
             <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
                 <path
@@ -68,7 +73,7 @@
         <div class="script-grid">
             <!-- SQL Section -->
             <div class="script-section">
-                <div class="section-label">SFMC SQL</div>
+                <div class="section-label">MCE SQL</div>
                 <div class="script-content">
                     <code id="sql-text"></code>
                     <button class="copy-btn" data-target="sql-text" aria-label="Copy SQL">COPY</button>
@@ -103,6 +108,12 @@
             <button id="apply-time-btn">APPLY</button>
         </div>
         <span id="mce-feedback" aria-live="polite"></span>
+    </div>
+
+    <!-- Script Timezone Picker -->
+    <div id="script-timezone-picker" class="hidden" role="dialog" aria-label="Select Timezone for Script">
+        <p class="picker-instruction">Select timezone for conversion scripts</p>
+        <ul id="script-timezone-list" role="listbox"></ul>
     </div>
 
     <template id="clock-template">
@@ -159,9 +170,6 @@
                 </div>
             </div>
             <div class="timezone-display"></div>
-            <div class="get-script-container">
-                <button class="get-script-btn">GET SCRIPT</button>
-            </div>
 
             <div class="delete-overlay hidden">
                 <div class="delete-content">
@@ -177,7 +185,7 @@
 
     <!-- Dialog removed, replaced by custom picker in controls-container -->
 
-    <script src="script.js?v=59"></script>
+    <script src="script.js?v=62"></script>
 </body>
 
 </html>

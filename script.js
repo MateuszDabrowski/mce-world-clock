@@ -16,9 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyTimeBtn = document.getElementById('apply-time-btn');
     const mceFeedback = document.getElementById('mce-feedback');
     const mceOptionsList = document.getElementById('mce-options-list');
-    const mceOpts = document.querySelectorAll('.mce-opt');
+    const mceFunctionsList = document.getElementById('mce-functions-list');
+    const mceSearch = document.getElementById('mce-search');
     const mceResetBtn = document.getElementById('mce-reset-btn');
     const notificationToast = document.getElementById('notification-toast');
+
+    // Script Timezone Picker
+    const scriptTimezonePicker = document.getElementById('script-timezone-picker');
+    const scriptTimezoneList = document.getElementById('script-timezone-list');
 
 
     // Script Output Panel
@@ -111,53 +116,123 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClocks();
     });
 
-    // --- MCE CONVERTER LOGIC ---
+    // --- MCE FUNCTIONS MENU LOGIC ---
+    function renderMceFunctionsList(filter = "") {
+        if (!mceFunctionsList) return;
+        const lowerFilter = filter.toLowerCase();
+        const allOpts = mceFunctionsList.querySelectorAll('.mce-opt');
+
+        allOpts.forEach(opt => {
+            const text = opt.textContent.toLowerCase();
+            if (text.includes(lowerFilter)) {
+                opt.style.display = 'block';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+
     if (mceBtn) {
         mceBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             mceOptionsList.classList.toggle('hidden');
             // Close other pickers if open
             pickerContainer.classList.add('hidden');
+            scriptTimezonePicker.classList.add('hidden');
 
-            // Focus logic
+            // Focus and reset search
             if (!mceOptionsList.classList.contains('hidden')) {
-                const firstOpt = mceOptionsList.querySelector('.mce-opt');
-                if (firstOpt) firstOpt.focus();
+                if (mceSearch) {
+                    mceSearch.value = "";
+                    renderMceFunctionsList();
+                    mceSearch.focus();
+                }
+            }
+        });
+    }
+
+    // MCE Search Input
+    if (mceSearch) {
+        mceSearch.addEventListener('input', (e) => renderMceFunctionsList(e.target.value));
+
+        mceSearch.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const firstVisible = mceFunctionsList.querySelector('.mce-opt[style*="block"], .mce-opt:not([style])');
+                if (firstVisible) firstVisible.focus();
+            }
+            if (e.key === 'Escape') {
+                mceOptionsList.classList.add('hidden');
             }
         });
     }
 
     // Handle MCE Menu Actions
-    mceOpts.forEach(opt => {
-        opt.tabIndex = 0; // Make focusable
+    if (mceFunctionsList) {
+        mceFunctionsList.addEventListener('click', (e) => {
+            const opt = e.target.closest('.mce-opt');
+            if (!opt) return;
 
-        const action = () => {
-             const actionType = opt.dataset.action;
-            mceOptionsList.classList.add('hidden');
+            handleMceAction(opt.dataset.action);
+        });
 
-            if (actionType === 'convert') {
-                mceInlineControls.classList.remove('hidden');
-                clockGrid.classList.add('mce-active'); // Add extra padding for scrolling
-                datetimeInput.focus();
-                if (mceResetBtn) mceResetBtn.classList.remove('hidden');
-            } else if (actionType === 'reset') {
-                resetToLive();
-            }
-        };
+        mceFunctionsList.addEventListener('keydown', (e) => {
+            const opt = e.target.closest('.mce-opt');
+            if (!opt) return;
 
-        opt.addEventListener('click', action);
-        opt.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                action();
+                handleMceAction(opt.dataset.action);
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                let next = opt.nextElementSibling;
+                while (next && next.style.display === 'none') {
+                    next = next.nextElementSibling;
+                }
+                if (next) next.focus();
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                let prev = opt.previousElementSibling;
+                while (prev && prev.style.display === 'none') {
+                    prev = prev.previousElementSibling;
+                }
+                if (prev) prev.focus();
+                else mceSearch.focus();
+            }
+            if (e.key === 'Escape') {
+                mceOptionsList.classList.add('hidden');
             }
         });
-    });
+
+        // Make options focusable
+        mceFunctionsList.querySelectorAll('.mce-opt').forEach(opt => {
+            opt.tabIndex = 0;
+        });
+    }
+
+    function handleMceAction(actionType) {
+        mceOptionsList.classList.add('hidden');
+
+        if (actionType === 'convert-date') {
+            mceInlineControls.classList.remove('hidden');
+            clockGrid.classList.add('mce-active');
+            datetimeInput.focus();
+            if (mceResetBtn) mceResetBtn.classList.remove('hidden');
+        } else if (actionType === 'generate-scripts') {
+            openScriptTimezonePicker();
+        }
+    }
 
     // Close MCE picker when clicking outside
     document.addEventListener('click', (e) => {
         if (mceOptionsList && !mceOptionsList.contains(e.target) && e.target !== mceBtn) {
             mceOptionsList.classList.add('hidden');
+        }
+        if (scriptTimezonePicker && !scriptTimezonePicker.contains(e.target) &&
+            !mceOptionsList.contains(e.target) && e.target !== mceBtn) {
+            scriptTimezonePicker.classList.add('hidden');
         }
     });
 
@@ -176,6 +251,170 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mceResetBtn) mceResetBtn.classList.add('hidden');
         renderClocks();
         requestAnimationFrame(tick);
+    }
+
+    // --- SCRIPT TIMEZONE PICKER ---
+    function openScriptTimezonePicker() {
+        if (!scriptTimezonePicker || !scriptTimezoneList) return;
+
+        // Populate with currently displayed clocks (excluding Salesforce/MCE clock)
+        scriptTimezoneList.innerHTML = '';
+
+        clocks.forEach(clockData => {
+            if (clockData.timezone === 'Etc/GMT+6') return; // Skip Salesforce clock
+
+            const tzData = timezoneDatabase.find(t => t.iana === clockData.timezone);
+            const displayName = tzData ? tzData.label : clockData.timezone.replace(/_/g, ' ');
+            const offsetStr = getOffsetString(clockData.timezone);
+
+            const li = document.createElement('li');
+            li.className = 'script-tz-option';
+            li.textContent = `${displayName} (${offsetStr})`;
+            li.dataset.timezone = clockData.timezone;
+            li.dataset.isLocal = clockData.isLocal ? 'true' : 'false';
+            li.tabIndex = 0;
+
+            const selectAction = () => {
+                scriptTimezonePicker.classList.add('hidden');
+                generateScriptsForTimezone(clockData.timezone, clockData.isLocal);
+            };
+
+            li.addEventListener('click', selectAction);
+            li.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectAction();
+                }
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = li.nextElementSibling;
+                    if (next) next.focus();
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prev = li.previousElementSibling;
+                    if (prev) prev.focus();
+                }
+                if (e.key === 'Escape') {
+                    scriptTimezonePicker.classList.add('hidden');
+                }
+            });
+
+            scriptTimezoneList.appendChild(li);
+        });
+
+        scriptTimezonePicker.classList.remove('hidden');
+        const firstItem = scriptTimezoneList.firstElementChild;
+        if (firstItem) firstItem.focus();
+    }
+
+    function generateScriptsForTimezone(iana, isLocal) {
+        const tzEntry = timezoneDatabase.find(t => t.iana === iana);
+        const windowsName = tzEntry ? tzEntry.windows : 'Target Standard Time';
+        const now = overrideTime || new Date();
+        const isUtc = iana === 'UTC';
+
+        // 1. Calculate Offsets for Winter (Jan) and Summer (Jul)
+        const currentYear = now.getFullYear();
+        const jan = new Date(currentYear, 0, 1);
+        const jul = new Date(currentYear, 6, 1);
+
+        const systemOffset = -360; // SFMC is fixed UTC-6
+
+        const offWinter = getOffsetMinutes(iana, jan);
+        const offSummer = getOffsetMinutes(iana, jul);
+
+        const offsetWinterHours = (offWinter - systemOffset) / 60;
+        const offsetSummerHours = (offSummer - systemOffset) / 60;
+
+        // 2. Get Timezone Shortcut for Alias - sanitize for valid T-SQL column names
+        let tzShort = 'TZ';
+        try {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: iana,
+                timeZoneName: 'short'
+            });
+            tzShort = formatter.formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'TZ';
+        } catch (e) {}
+
+        // Replace special characters to create valid T-SQL column name
+        const sanitizedTz = tzShort
+            .replace(/\+/g, '_plus_')
+            .replace(/-/g, '_minus_')
+            .replace(/:/g, '')
+            .replace(/[^a-zA-Z0-9_]/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '');
+
+        // 3. Generate Snippets
+        const sqlSnippet = `[DateColumn] AT TIME ZONE 'Central America Standard Time' AT TIME ZONE '${windowsName}' AS [DateColumn_${sanitizedTz}]`;
+
+        let ampSnippet, ssjsSnippet;
+
+        // Check if timezone observes DST (different winter/summer offsets)
+        const hasDST = offsetWinterHours !== offsetSummerHours;
+
+        if (isLocal) {
+            ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = SystemDateToLocalDate(@date)\n]%%`;
+            ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var convertedDate = Platform.Function.SystemDateToLocalDate(date);\n</script>`;
+
+            // Show notice for local timezone
+            const localTzNotice = document.getElementById('local-tz-notice');
+            if (localTzNotice) localTzNotice.classList.remove('hidden');
+
+            // Button to generate dynamic script instead
+            const dynamicBtn = document.getElementById('generate-dynamic-script');
+            if (dynamicBtn) {
+                dynamicBtn.onclick = () => generateScriptsForTimezone(iana, false);
+            }
+        } else {
+            // Hide notice for non-local timezones
+            const localTzNotice = document.getElementById('local-tz-notice');
+            if (localTzNotice) localTzNotice.classList.add('hidden');
+
+            if (isUtc || !hasDST) {
+            // UTC or timezones without DST - simple fixed offset
+            const fixedOffset = offsetWinterHours;
+            ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = DateAdd(@date, ${fixedOffset}, 'H')\n]%%`;
+            ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var convertedDate = Platform.Function.DateAdd(date, ${fixedOffset}, 'H');\n</script>`;
+        } else {
+            // DST timezone - user sets MM-dd for DST start/end
+            ampSnippet = `%%[
+    VAR @date, @dstStart, @dstEnd, @offset, @convertedDate
+    SET @date = [DateColumn]
+    SET @dstStart = CONCAT(DatePart(@date, 'Y'), '-03-30') /* UPDATE: YYYY-MM-dd when +1h DST starts */
+    SET @dstEnd = CONCAT(DatePart(@date, 'Y'), '-10-26')   /* UPDATE: YYYY-MM-dd when +1h DST ends */
+
+    IF @date >= @dstStart AND @date <= @dstEnd THEN
+        SET @offset = ${offsetSummerHours} /* Summer offset */
+    ELSE
+        SET @offset = ${offsetWinterHours} /* Winter offset */
+    ENDIF
+
+    SET @convertedDate = DateAdd(@date, @offset, 'H')
+]%%`;
+
+            ssjsSnippet = `<script runat="server">
+    Platform.Load('Core', '1.1.1');
+
+    var date = new Date(Attribute.GetValue('DateColumn'));
+    var year = date.getFullYear();
+    var dstStart = new Date(year + '-03-30'); // UPDATE: YYYY-MM-dd when +1h DST starts
+    var dstEnd = new Date(year + '-10-26');   // UPDATE: YYYY-MM-dd when +1h DST ends
+
+    // Summer offset: ${offsetSummerHours}, Winter offset: ${offsetWinterHours}
+    var offset = (date >= dstStart && date <= dstEnd) ? ${offsetSummerHours} : ${offsetWinterHours};
+    var convertedDate = Platform.Function.DateAdd(date, offset, 'H');
+</script>`;
+        }
+    }
+
+        // 4. Populate UI
+        document.getElementById('sql-text').textContent = sqlSnippet;
+        document.getElementById('ampscript-text').textContent = ampSnippet;
+        document.getElementById('ssjs-text').textContent = ssjsSnippet;
+
+        scriptOutput.classList.remove('hidden');
     }
 
     applyTimeBtn.addEventListener('click', () => {
@@ -445,10 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmBtn = clone.querySelector('.confirm-delete');
             const cancelBtn = clone.querySelector('.cancel-delete');
 
-            const getScriptContainer = clone.querySelector('.get-script-container');
-            const getScriptBtn = clone.querySelector('.get-script-btn');
-            const scriptOptions = clone.querySelector('.script-options');
-
             card.dataset.timezone = clockData.timezone;
             card.dataset.index = index;
 
@@ -467,17 +702,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 homeIcon.style.display = 'block';
                 salesforceIcon.style.display = 'none';
                 removeBtn.style.display = 'none';
-                getScriptContainer.classList.toggle('hidden', !overrideTime);
             } else if (isSalesforce) {
                 homeIcon.style.display = 'none';
                 salesforceIcon.style.display = 'block';
                 removeBtn.style.display = 'none';
-                getScriptContainer.classList.add('hidden'); // Never for Salesforce
             } else {
                 homeIcon.style.display = 'none';
                 salesforceIcon.style.display = 'none';
                 removeBtn.style.display = 'flex';
-                getScriptContainer.classList.toggle('hidden', !overrideTime);
 
                 removeBtn.addEventListener('click', () => {
                     deleteOverlay.classList.remove('hidden');
@@ -493,66 +725,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderClocks();
                 });
             }
-
-            // Simplified Get Script Logic - Direct Multi-Language output (DST Aware Refined)
-            getScriptBtn.addEventListener('click', () => {
-                const iana = clockData.timezone;
-                const tzEntry = timezoneDatabase.find(t => t.iana === iana);
-                const windowsName = tzEntry ? tzEntry.windows : 'Target Standard Time';
-                const now = overrideTime || new Date();
-                const isLocal = clockData.isLocal;
-                const isUtc = iana === 'UTC';
-
-                // 1. Calculate Offsets for Winter (Jan) and Summer (Jul)
-                const currentYear = now.getFullYear();
-                const jan = new Date(currentYear, 0, 1);
-                const jul = new Date(currentYear, 6, 1);
-
-                const systemOffset = -360; // SFMC is fixed UTC-6
-
-                const offWinter = getOffsetMinutes(iana, jan);
-                const offSummer = getOffsetMinutes(iana, jul);
-
-                const offsetWinterHours = (offWinter - systemOffset) / 60;
-                const offsetSummerHours = (offSummer - systemOffset) / 60;
-
-                // 2. Get Timezone Shortcut for Alias
-                let tzShort = 'TZ';
-                try {
-                    const formatter = new Intl.DateTimeFormat('en-US', {
-                        timeZone: iana,
-                        timeZoneName: 'short'
-                    });
-                    tzShort = formatter.formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'TZ';
-                } catch (e) {}
-
-                const sanitizedTz = tzShort.replace(/\+/g, 'plus').replace(/-/g, 'minus');
-
-                // 3. Generate Snippets
-                const sqlSnippet = `[DateColumn] AT TIME ZONE 'Central America Standard Time' AT TIME ZONE '${windowsName}' AS [DateColumn_${sanitizedTz}]`;
-
-                let ampSnippet, ssjsSnippet;
-
-                if (isLocal) {
-                    ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = SystemDateToLocalDate(@date)\n]%%`;
-                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var convertedDate = Platform.Function.SystemDateToLocalDate(date);\n</script>`;
-                } else if (isUtc) {
-                    ampSnippet = `%%[\n    VAR @date, @convertedDate\n    SET @date = [DateColumn]\n    SET @convertedDate = DateAdd(@date, 6, 'H')\n]%%`;
-                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn'); \n    var convertedDate = Platform.Function.DateAdd(date, 6, 'H');\n</script>`;
-                } else {
-                    // Logic with User-Defined DST bounds
-                    ampSnippet = `%%[\n    VAR @date, @summerTimeStart, @summerTimeEnd, @winterOffset, @summerOffset, @offset, @convertedDate\n    SET @date = [DateColumn]\n    SET @summerTimeStart = '${currentYear}-03-30' /* UPDATE TO ACTUAL */\n    SET @summerTimeEnd = '${currentYear}-10-26'   /* UPDATE TO ACTUAL */\n    \n    SET @winterOffset = ${offsetWinterHours}\n    SET @summerOffset = ${offsetSummerHours}\n    \n    IF @date >= @summerTimeStart AND @date <= @summerTimeEnd THEN\n        SET @offset = @summerOffset\n    ELSE\n        SET @offset = @winterOffset\n    ENDIF\n    \n    SET @convertedDate = DateAdd(@date, @offset, 'H')\n]%%`;
-
-                    ssjsSnippet = `<script runat="server">\n    Platform.Load('Core', '1.1.1');\n    var date = Attribute.GetValue('DateColumn');\n    var summerTimeStart = new Date('${currentYear}-03-30'); // UPDATE TO ACTUAL\n    var summerTimeEnd = new Date('${currentYear}-10-26');   // UPDATE TO ACTUAL\n    \n    var offset = (date >= summerTimeStart && date <= summerTimeEnd) ? ${offsetSummerHours} : ${offsetWinterHours};\n    var convertedDate = Platform.Function.DateAdd(date, offset, 'H');\n</script>`;
-                }
-
-                // 4. Populate UI
-                document.getElementById('sql-text').textContent = sqlSnippet;
-                document.getElementById('ampscript-text').textContent = ampSnippet;
-                document.getElementById('ssjs-text').textContent = ssjsSnippet;
-
-                scriptOutput.classList.remove('hidden');
-            });
 
             updateSingleClock(
                 clockData.timezone,
