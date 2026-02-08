@@ -1181,7 +1181,19 @@ code {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    animation: slideUpFade 0.3s ease-out;
+    animation: slideUpFadeCentered 0.3s ease-out;
+}
+
+@keyframes slideUpFadeCentered {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 .picker-instruction {
