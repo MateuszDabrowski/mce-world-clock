@@ -41,13 +41,19 @@
           <span class="md-toolbar__brand-text">Clockforce</span>
         </a>
 
-        <div class="md-toolbar__group">
-          <!-- View mode segmented control (first item) -->
-          <div class="md-toolbar__view-toggle" role="radiogroup" aria-label="View mode">
-            <button id="btn-view-timeline" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Timeline view">Timeline</button>
-            <button id="btn-view-clocks" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Clock faces">Clocks</button>
-          </div>
+        <!-- View mode segmented control (visible on all screen sizes) -->
+        <div class="md-toolbar__view-toggle" role="radiogroup" aria-label="View mode">
+          <button id="btn-view-timeline" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Timeline view">
+            <svg class="md-toolbar__view-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M465 20H55c-8 0-15 7-15 15v50c0 8 7 15 15 15h410c8 0 15-7 15-15V35c0-8-7-15-15-15M145 140H55c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15M145 240H55c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15M145 340H55c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15M145 440H55c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15m160 0h-90c-8 0-15 7-15 15v30c0 8 7 15 15 15h90c8 0 15-7 15-15v-30c0-8-7-15-15-15"/></svg>
+            <span class="md-toolbar__view-text">Timeline</span>
+          </button>
+          <button id="btn-view-clocks" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Clock faces">
+            <svg class="md-toolbar__view-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10.5,9.5" stroke-linecap="round"/></svg>
+            <span class="md-toolbar__view-text">Clocks</span>
+          </button>
+        </div>
 
+        <div class="md-toolbar__group">
           <!-- Save/Load dropdown -->
           <div class="md-toolbar__dropdown">
             <button id="btn-saveload" class="md-toolbar__button" title="Save / Load" aria-haspopup="menu" aria-expanded="false">
@@ -145,57 +151,52 @@
 
       <!-- Mobile hamburger -->
       <div class="md-toolbar__hamburger-wrap">
-        <button id="btn-hamburger" class="md-toolbar__button md-toolbar__button--icon-only md-toolbar__hamburger-btn" title="Menu" aria-label="Menu" aria-expanded="false">
+        <button id="btn-hamburger" class="md-toolbar__button md-toolbar__button--icon-only md-toolbar__hamburger-btn" title="Menu" aria-label="Menu" aria-expanded="false" aria-controls="hamburger-menu" aria-haspopup="menu">
           <svg class="md-toolbar__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <rect x="1" y="2.5" width="14" height="1.8" rx="0.9"/>
             <rect x="1" y="7.1" width="14" height="1.8" rx="0.9"/>
             <rect x="1" y="11.7" width="14" height="1.8" rx="0.9"/>
           </svg>
         </button>
-        <div id="hamburger-menu" class="md-toolbar__hamburger-menu">
-          <button class="md-toolbar__menu-item" data-action="convert-date">
+        <div id="hamburger-menu" class="md-toolbar__hamburger-menu" role="menu" aria-label="Application menu">
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="convert-date">
             <svg class="md-toolbar__menu-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
             Convert MCE Date
           </button>
-          <button class="md-toolbar__menu-item" data-action="generate-scripts">
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="generate-scripts">
             <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/></svg>
             Generate Scripts
           </button>
           <div class="md-toolbar__menu-separator" role="separator"></div>
-          <button class="md-toolbar__menu-item" data-action="view-timeline">
-            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="15" y2="8"/><line x1="1" y1="12" x2="15" y2="12"/><line x1="8" y1="2" x2="8" y2="14" stroke-width="2"/></svg>
-            Timeline View
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="save-browser">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M371 40v136c0 10-8 19-19 19H139c-10 0-19-8-19-19V40H80a40 40 0 00-40 40v360a40 40 0 0040 40h360a40 40 0 0040-40V112l-72-72zm70 381c0 10-8 19-19 19H99c-10 0-19-8-19-19V254c0-10 8-19 19-19h323c10 0 19 8 19 19zM248 136c0 10 8 19 19 19h46c10 0 19-8 19-19V40h-83z"/></svg>
+            Save to Browser
           </button>
-          <button class="md-toolbar__menu-item" data-action="view-clocks">
-            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" aria-hidden="true"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10.5,9.5" stroke-linecap="round"/></svg>
-            Clocks View
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="load-browser">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15M270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"/></svg>
+            Load from Browser
           </button>
-          <div class="md-toolbar__menu-separator" role="separator"></div>
-          <button class="md-toolbar__menu-item" data-action="fmt-12h">12h Format</button>
-          <button class="md-toolbar__menu-item" data-action="fmt-24h">24h Format</button>
-          <button class="md-toolbar__menu-item" data-action="fmt-mix">Mix Format</button>
-          <div class="md-toolbar__menu-separator" role="separator"></div>
-          <button class="md-toolbar__menu-item" data-action="toggle-tz">
-            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0z"/></svg>
-            Toggle Timezones
-          </button>
-          <button class="md-toolbar__menu-item" data-action="toggle-scripts">
-            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/></svg>
-            Toggle Scripts
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="share-url">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M272 417l-21-3-21-6c-4-1-9 0-12 3l-5 5a79 79 0 01-106 6 77 77 0 01-4-112l76-76c10-10 22-16 34-20a79 79 0 0174 20l10 13c4 7 13 8 18 2l28-28c4-4 4-10 1-15l-14-16a128 128 0 00-71-37 143 143 0 00-124 37l-73 73C9 316 5 402 56 456c53 58 143 59 198 4l25-25c7-5 2-17-7-18M456 58c-55-51-141-47-193 6l-23 22c-7 7-2 19 7 20 14 1 28 4 42 8 4 1 9 0 12-3l5-5c29-29 76-32 106-6 34 29 35 81 4 112l-76 76a85 85 0 01-34 20 79 79 0 01-74-20l-10-13c-4-7-13-8-18-2l-28 28c-4 4-4 10-1 15l14 16a130 130 0 0070 37 143 143 0 00124-37l76-76c56-55 54-145-3-198"/></svg>
+            Share as URL
           </button>
           <div class="md-toolbar__menu-separator" role="separator"></div>
-          <button class="md-toolbar__menu-item" data-action="theme">
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="fmt-12h">12h Format</button>
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="fmt-24h">24h Format</button>
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="fmt-mix">Mix Format</button>
+          <div class="md-toolbar__menu-separator" role="separator"></div>
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="theme">
             <svg class="md-toolbar__menu-icon md-toolbar__icon--theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
               <path class="md-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               <g class="md-icon-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g>
           </svg>
             Toggle Theme
           </button>
-          <button class="md-toolbar__menu-item" data-action="about">
+          <button class="md-toolbar__menu-item" role="menuitem" data-action="about">
             <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zM7.25 5a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0zM7.25 7h1.5v4.5h-1.5V7z"/></svg>
             About
           </button>
-          <button class="md-toolbar__menu-item md-toolbar__menu-item--danger" data-action="reset">
+          <button class="md-toolbar__menu-item md-toolbar__menu-item--danger" role="menuitem" data-action="reset">
             Reset to Now()
           </button>
         </div>
@@ -206,7 +207,7 @@
     <div class="md-main">
       <!-- Left sidebar — Scripts panel -->
       <aside id="scripts-panel" class="md-scripts" aria-label="Script snippets">
-        <div class="md-drag-handle" data-target="scripts-panel"></div>
+        <div class="md-drag-handle" data-target="scripts-panel" role="separator" aria-label="Resize scripts panel"></div>
         <div class="md-scripts__header">
           <span class="md-scripts__title">MCE Conversion Snippets</span>
           <button id="btn-close-scripts" class="md-toolbar__button md-toolbar__button--icon-only" title="Close scripts" aria-label="Close scripts">
@@ -284,7 +285,7 @@
 
       <!-- Right sidebar — Timezone picker -->
       <aside id="tz-panel" class="md-timezones md-timezones--hidden" aria-label="Timezone picker">
-        <div class="md-drag-handle" data-target="tz-panel"></div>
+        <div class="md-drag-handle" data-target="tz-panel" role="separator" aria-label="Resize timezone panel"></div>
         <div class="md-sidebar__header">
           <span class="md-sidebar__header-title">Available Timezones</span>
           <span id="tz-count" class="md-sidebar__category-count">0</span>
@@ -293,7 +294,7 @@
           </button>
         </div>
         <div class="md-sidebar__body">
-          <ul id="tz-list" class="md-sidebar__items" role="listbox">
+          <ul id="tz-list" class="md-sidebar__items" role="listbox" aria-label="Timezone list">
             <!-- Rendered by sidebar-tz.js -->
           </ul>
         </div>

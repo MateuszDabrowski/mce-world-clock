@@ -4,6 +4,7 @@ import * as mce from './mce.js';
 import * as clocks from './clocks.js';
 import { getOffsetString } from './timezones.js';
 import { highlightSQL, highlightAMPScript, highlightSSJS } from './syntax.js';
+import { setupDragHandle } from './drag-handle.js';
 
 let currentScripts = null;
 let currentIsLocal = false;
@@ -19,11 +20,16 @@ export function init() {
       navigator.clipboard.writeText(text).then(() => {
         const orig = btn.textContent;
         btn.textContent = 'COPIED!';
+        btn.setAttribute('aria-label', 'Copied to clipboard');
         btn.classList.add('md-script-section__copy--copied');
         setTimeout(() => {
           btn.textContent = orig;
+          btn.setAttribute('aria-label', 'Copy snippet');
           btn.classList.remove('md-script-section__copy--copied');
         }, 2000);
+      }).catch(() => {
+        btn.textContent = 'FAILED';
+        setTimeout(() => { btn.textContent = 'COPY'; }, 2000);
       });
     });
   });
@@ -33,6 +39,9 @@ export function init() {
   if (closeBtn) {
     closeBtn.addEventListener('click', hide);
   }
+
+  // Mobile drag handle for resizing scripts panel height
+  setupDragHandle('scripts-panel', 80, 0.8);
 
   // Dynamic script button (local → dynamic)
   const dynamicBtn = document.getElementById('generate-dynamic-script');
@@ -87,6 +96,12 @@ export function showForTimezone(iana, isLocal, forceDST = false) {
 export function show() {
   const panel = document.getElementById('scripts-panel');
   if (panel) panel.classList.add('md-scripts--visible');
+
+  // On mobile, hide timezone panel when scripts panel opens
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    const tzPanel = document.getElementById('tz-panel');
+    if (tzPanel) tzPanel.classList.add('md-timezones--hidden');
+  }
 }
 
 export function hide() {

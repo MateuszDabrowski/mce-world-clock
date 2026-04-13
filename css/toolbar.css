@@ -169,12 +169,8 @@
 
 .md-toolbar__tz-search-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(29, 115, 201, 0.12);
+  box-shadow: var(--focus-ring-primary);
   width: 220px;
-}
-
-[data-theme="dark"] .md-toolbar__tz-search-input:focus {
-  box-shadow: 0 0 0 3px rgba(218, 78, 85, 0.12);
 }
 
 .md-toolbar__tz-search-wrap .md-toolbar__tz-search-icon {
@@ -463,7 +459,7 @@
 }
 
 .md-datetime-picker__apply-btn:hover {
-  background-color: #155da0;
+  opacity: 0.88;
   transform: scale(1.02);
 }
 
@@ -488,7 +484,7 @@
 }
 
 .md-datetime-picker__reset-btn:hover {
-  background-color: #b73a3f;
+  opacity: 0.88;
   transform: scale(1.02);
 }
 
@@ -514,6 +510,8 @@
   right: 0;
   margin-top: 4px;
   min-width: 200px;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
   background: var(--toolbar-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
@@ -542,32 +540,44 @@
   display: block;
 }
 
+/* View toggle icon (hidden on desktop, shown on mobile) */
+.md-toolbar__view-icon {
+  display: none;
+}
+
+.md-toolbar__view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* Mobile toolbar */
 @media (max-width: 768px) {
   .md-toolbar {
     height: 48px;
-    padding: 0 4px;
-    gap: 0;
+    padding: 0 6px;
+    gap: 8px;
     justify-content: flex-start;
   }
 
   .md-toolbar__hamburger-wrap {
     display: block;
     flex-shrink: 0;
-    order: 1;
+    order: 4;
   }
 
   .md-toolbar__left {
-    order: 3;
-    flex: 1;
+    order: 1;
+    flex: 0 0 auto;
     min-width: 0;
-    justify-content: center;
+    gap: 8px;
   }
 
   .md-toolbar__right {
-    order: 4;
+    order: 3;
     gap: 0;
-    flex-shrink: 0;
+    flex: 1;
+    justify-content: flex-end;
   }
 
   .md-toolbar__brand {
@@ -584,14 +594,59 @@
     font-size: var(--font-size-md);
   }
 
-  /* Hide main toolbar sections on mobile */
+  /* Hide main toolbar sections on mobile — keep view toggle visible */
   .md-toolbar__left > .md-toolbar__group,
   .md-toolbar__left > .md-toolbar__dropdown,
   .md-toolbar__left > .md-toolbar__separator,
   .md-toolbar__right > #btn-theme,
   .md-toolbar__right > #btn-about,
-  .md-toolbar__right > .md-toolbar__tz-search-wrap {
+  .md-toolbar__right > #btn-share-icon,
+  .md-toolbar__right > .md-toolbar__view-toggle,
+  .md-toolbar__right > .md-toolbar__separator {
     display: none !important;
+  }
+
+  /* View toggle: show icons, hide text on mobile */
+  .md-toolbar__view-icon {
+    display: block;
+  }
+
+  .md-toolbar__view-text {
+    display: none;
+  }
+
+  .md-toolbar__view-toggle {
+    order: 2;
+    flex-shrink: 0;
+  }
+
+  .md-toolbar__view-btn {
+    padding: 6px 10px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .md-toolbar__view-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Timezone search — visible on mobile */
+  .md-toolbar__right > .md-toolbar__tz-search-wrap {
+    display: flex !important;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .md-toolbar__tz-search-input {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .md-toolbar__tz-search-input:focus {
+    width: 100%;
   }
 
   /* Show mobile-only buttons */
@@ -613,9 +668,54 @@
     height: 20px;
   }
 
-  /* Hamburger menu from left */
+  /* Hamburger menu from right */
   .md-toolbar__hamburger-menu {
-    left: 0;
-    right: auto;
+    left: auto;
+    right: 0;
+  }
+
+  /* Datetime picker locked below navbar on mobile */
+  .md-datetime-picker {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    padding: 4px 10px;
+    gap: 4px;
+    z-index: 80;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .md-datetime-picker__tz-btn {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .md-datetime-picker__date-input {
+    width: 110px;
+    font-size: 12px;
+    padding: 3px 4px;
+  }
+
+  .md-datetime-picker__time-input {
+    width: 70px;
+    font-size: 12px;
+    padding: 3px 4px;
+  }
+
+  .md-datetime-picker__apply-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .md-datetime-picker__reset-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+    flex-basis: 100%;
+    text-align: center;
   }
 }

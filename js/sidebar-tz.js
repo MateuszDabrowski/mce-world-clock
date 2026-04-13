@@ -3,6 +3,7 @@
 import { getProcessedTimezones, findMatchingAlias } from './timezones.js';
 import * as clocks from './clocks.js';
 import { getCustomName, saveCustomName } from './persistence.js';
+import { setupDragHandle } from './drag-handle.js';
 
 // SVG icons
 const ICON_ADD = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>';
@@ -39,6 +40,9 @@ export function init() {
   }
 
   renderTimezoneList();
+
+  // Mobile drag handle for resizing sidebar height
+  setupDragHandle('tz-panel', 80, 0.7);
 }
 
 export function show() {
@@ -78,6 +82,9 @@ function renderTimezoneList(filter = '') {
     const li = document.createElement('li');
     li.className = 'md-tz-item' + (isUsed ? ' md-tz-item--added' : '') + (isProtected ? ' md-tz-item--protected' : '');
     li.tabIndex = (isUsed && isProtected) ? -1 : 0;
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', isUsed ? 'true' : 'false');
+    li.setAttribute('aria-label', `${data.city} ${data.offsetLabel}${isUsed ? ' (added)' : ''}`);
 
     // Icon
     const iconSpan = document.createElement('span');
@@ -202,6 +209,7 @@ function startRename(li, tzId, defaultName) {
   input.className = 'md-tz-item__rename-input';
   input.value = currentCustom;
   input.placeholder = defaultName;
+  input.setAttribute('aria-label', `Rename ${defaultName}`);
 
   // Stop all clicks on input from bubbling to li (prevents add/remove)
   input.addEventListener('click', (e) => e.stopPropagation());

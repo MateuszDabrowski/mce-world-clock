@@ -146,4 +146,9 @@ select:focus-visible {
     flex: 1;
     min-height: 0;
   }
+
+  /* Timeline container: remove excess top spacing */
+  .md-timeline {
+    padding-top: 0;
+  }
 }

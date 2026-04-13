@@ -84,6 +84,12 @@ export function init() {
   // Hamburger menu
   setupHamburger();
 
+  // Mobile: shorter placeholder for search
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    const searchInput = document.getElementById('tz-navbar-search');
+    if (searchInput) searchInput.placeholder = 'Timezones';
+  }
+
   // Initial state
   updateResetVisibility();
   updateDatetimeInputs();
@@ -541,26 +547,54 @@ function setupHamburger() {
     btn.setAttribute('aria-expanded', wrap.classList.contains('md-toolbar__hamburger-wrap--open'));
   });
 
-  // Hamburger menu item actions
-  wrap.querySelectorAll('.md-toolbar__menu-item[data-action]').forEach(item => {
-    item.addEventListener('click', () => {
-      wrap.classList.remove('md-toolbar__hamburger-wrap--open');
-      btn.setAttribute('aria-expanded', 'false');
+  // Hamburger menu item actions + keyboard navigation (WCAG 2.1.1)
+  const menuItems = Array.from(wrap.querySelectorAll('.md-toolbar__menu-item[data-action]'));
 
-      const action = item.dataset.action;
-      switch (action) {
-        case 'convert-date': openMceDateModal(); break;
-        case 'generate-scripts': openScriptPicker(); break;
-        case 'view-timeline': if (_setViewFn) _setViewFn('timeline'); break;
-        case 'view-clocks': if (_setViewFn) _setViewFn('clocks'); break;
-        case 'fmt-24h': clocks.setTimeFormat('24h'); updateDatetimeInputs(); timeline.render(); break;
-        case 'fmt-12h': clocks.setTimeFormat('12h'); updateDatetimeInputs(); timeline.render(); break;
-        case 'fmt-mix': clocks.setTimeFormat('mix'); updateDatetimeInputs(); timeline.render(); break;
-        case 'toggle-tz': sidebarTz.toggle(); document.getElementById('tz-navbar-search')?.focus(); break;
-        case 'toggle-scripts': sidebarScripts.toggle(); break;
-        case 'theme': document.getElementById('btn-theme')?.click(); break;
-        case 'about': document.getElementById('btn-about')?.click(); break;
-        case 'reset': document.getElementById('btn-reset')?.click(); break;
+  const closeMenu = () => {
+    wrap.classList.remove('md-toolbar__hamburger-wrap--open');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.focus();
+  };
+
+  const handleAction = (action) => {
+    closeMenu();
+    switch (action) {
+      case 'convert-date': openMceDateModal(); break;
+      case 'generate-scripts': openScriptPicker(); break;
+      case 'save-browser': saveload.saveToBrowser(toastFn); break;
+      case 'load-browser': saveload.loadFromBrowser(toastFn); break;
+      case 'share-url': saveload.shareURL(toastFn); break;
+      case 'fmt-24h': clocks.setTimeFormat('24h'); updateDatetimeInputs(); timeline.render(); break;
+      case 'fmt-12h': clocks.setTimeFormat('12h'); updateDatetimeInputs(); timeline.render(); break;
+      case 'fmt-mix': clocks.setTimeFormat('mix'); updateDatetimeInputs(); timeline.render(); break;
+      case 'toggle-tz': sidebarTz.toggle(); document.getElementById('tz-navbar-search')?.focus(); break;
+      case 'toggle-scripts': sidebarScripts.toggle(); break;
+      case 'theme': document.getElementById('btn-theme')?.click(); break;
+      case 'about': document.getElementById('btn-about')?.click(); break;
+      case 'reset': document.getElementById('btn-reset')?.click(); break;
+    }
+  };
+
+  menuItems.forEach((item, idx) => {
+    item.addEventListener('click', () => handleAction(item.dataset.action));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = menuItems[idx + 1] || menuItems[0];
+        next.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = menuItems[idx - 1] || menuItems[menuItems.length - 1];
+        prev.focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        menuItems[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        menuItems[menuItems.length - 1].focus();
       }
     });
   });

@@ -332,7 +332,7 @@
 
 .md-modal__btn--primary {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--text-inverse);
   border-color: var(--color-primary);
 }
 
@@ -364,9 +364,9 @@
 }
 
 .md-modal__btn--danger:hover {
-  color: #e53935;
-  border-color: #e53935;
-  background: rgba(229, 57, 53, 0.08);
+  color: var(--brand-red);
+  border-color: var(--brand-red);
+  background: rgba(218, 78, 85, 0.08);
 }
 
 .md-modal__btn--icon {
@@ -382,7 +382,7 @@
 
 .md-modal__btn--icon:hover {
   color: var(--brand-red);
-  background: rgba(229, 57, 53, 0.08);
+  background: rgba(218, 78, 85, 0.08);
 }
 
 /* ── Share modal ─────────────────────────────────── */

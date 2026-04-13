@@ -13,6 +13,7 @@ let animId = null;
 let savedRange = null; // { startFraction, endFraction } — persists across re-renders
 let cleanupDragListeners = null; // cleanup function for document-level drag listeners
 let savedScrollLeft = null; // preserve scroll position across re-renders
+let focusedBlockerIdx = null; // which blocker has resize handles visible
 
 const BLOCKER_POS_KEY = 'clockforceBlockerPosition';
 
@@ -417,10 +418,10 @@ export function render() {
     rowData.push({ tz, displayName, diffHours, use24h: clocks.getUse24hForTz(tz) });
   });
 
-  // Time Block row — positioned among timezone rows based on saved position
+  // Time Block row — always visible, positioned among timezone rows
   const blockers = loadBlockers();
   const blockerRowElements = { fixedRow: null, scrollRow: null };
-  if (blockers.length > 0) {
+  {
     // Fixed panel: blocker label + info
     const blockerFixedRow = document.createElement('div');
     blockerFixedRow.className = 'md-tl__fixed-row md-tl__fixed-row--blocker';
@@ -437,27 +438,48 @@ export function render() {
 
     const blockerTitle = document.createElement('span');
     blockerTitle.className = 'md-tl__tz-name';
-    blockerTitle.textContent = `Time Blocks (${blockers.length})`;
+    blockerTitle.textContent = blockers.length > 0 ? `Time Blocks (${blockers.length})` : 'Time Blocks';
     blockerTitle.style.cursor = 'default';
     blockerLabel.appendChild(blockerTitle);
+
+    // Quick-add button in the label column
+    const quickAddBtn = document.createElement('button');
+    quickAddBtn.className = 'md-tl__blocker-add-btn';
+    quickAddBtn.textContent = '+ Add';
+    quickAddBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
+    quickAddBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = prompt('Time Block name:', 'Available');
+      if (!name) return;
+      // Start at nearest hour, 1-hour duration
+      const nowFraction = getCurrentFraction(clocks.getOverrideTime() || new Date());
+      const nearestHour = Math.round(nowFraction * TOTAL_HOURS) / TOTAL_HOURS;
+      const oneHour = 1 / TOTAL_HOURS;
+      const startF = Math.min(nearestHour, 1 - oneHour);
+      addBlocker({ name, startFraction: startF, endFraction: startF + oneHour });
+      render();
+    });
+    blockerLabel.appendChild(quickAddBtn);
     blockerFixedRow.appendChild(blockerLabel);
 
     const blockerInfo = document.createElement('div');
     blockerInfo.className = 'md-tl__info md-tl__info--blocker';
 
-    // Calculate total duration of all time blocks
-    const totalFraction = blockers.reduce((sum, b) => sum + (b.endFraction - b.startFraction), 0);
-    const totalMinutes = Math.round(totalFraction * TOTAL_HOURS * 60);
-    const totalH = Math.floor(totalMinutes / 60);
-    const totalM = totalMinutes % 60;
-    const totalLabel = document.createElement('span');
-    totalLabel.className = 'md-tl__blocker-total-label';
-    totalLabel.textContent = 'Total';
-    const totalValue = document.createElement('span');
-    totalValue.className = 'md-tl__blocker-total-value';
-    totalValue.textContent = totalM > 0 ? `${totalH}h ${totalM}m` : `${totalH}h`;
-    blockerInfo.appendChild(totalLabel);
-    blockerInfo.appendChild(totalValue);
+    if (blockers.length > 0) {
+      // Calculate total duration of all time blocks
+      const totalFraction = blockers.reduce((sum, b) => sum + (b.endFraction - b.startFraction), 0);
+      const totalMinutes = Math.round(totalFraction * TOTAL_HOURS * 60);
+      const totalH = Math.floor(totalMinutes / 60);
+      const totalM = totalMinutes % 60;
+      const totalLabel = document.createElement('span');
+      totalLabel.className = 'md-tl__blocker-total-label';
+      totalLabel.textContent = 'Total';
+      const totalValue = document.createElement('span');
+      totalValue.className = 'md-tl__blocker-total-value';
+      totalValue.textContent = totalM > 0 ? `${totalH}h ${totalM}m` : `${totalH}h`;
+      blockerInfo.appendChild(totalLabel);
+      blockerInfo.appendChild(totalValue);
+    }
     blockerFixedRow.appendChild(blockerInfo);
 
     // Scroll panel: blocker strip
@@ -488,21 +510,88 @@ export function render() {
       blockLabel.textContent = b.name;
       block.appendChild(blockLabel);
 
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'md-tl__blocker-remove';
-      removeBtn.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>';
-      removeBtn.title = 'Remove time block';
-      removeBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
-      removeBtn.addEventListener('click', (e) => {
+      // Resize handles on left and right edges
+      const handleLeft = document.createElement('div');
+      handleLeft.className = 'md-tl__blocker-handle md-tl__blocker-handle--left';
+      block.appendChild(handleLeft);
+
+      const handleRight = document.createElement('div');
+      handleRight.className = 'md-tl__blocker-handle md-tl__blocker-handle--right';
+      block.appendChild(handleRight);
+
+      // Resize from left edge
+      handleLeft.addEventListener('mousedown', (e) => {
         e.stopPropagation();
-        removeBlocker(idx);
-        render();
+        e.preventDefault();
+        const stripRect = blockerStrip.getBoundingClientRect();
+        const origStart = b.startFraction;
+        const origEnd = b.endFraction;
+        const minWidth = 1 / (TOTAL_HOURS * 4); // 15 min minimum
+
+        const onMove = (me) => {
+          let newStart = (me.clientX - stripRect.left) / stripRect.width;
+          newStart = Math.round(newStart * TOTAL_HOURS * 4) / (TOTAL_HOURS * 4);
+          newStart = Math.max(0, Math.min(origEnd - minWidth, newStart));
+          block.style.left = `${newStart * 100}%`;
+          block.style.width = `${(origEnd - newStart) * 100}%`;
+          block._resizeStart = newStart;
+          showBlockPreview(newStart, origEnd);
+        };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.userSelect = '';
+          if (block._resizeStart !== undefined) {
+            const allBlockers = loadBlockers();
+            allBlockers[idx].startFraction = block._resizeStart;
+            saveBlockers(allBlockers);
+            delete block._resizeStart;
+            focusedBlockerIdx = idx;
+            render();
+          }
+        };
+        document.body.style.userSelect = 'none';
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
       });
-      block.appendChild(removeBtn);
+
+      // Resize from right edge
+      handleRight.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const stripRect = blockerStrip.getBoundingClientRect();
+        const origStart = b.startFraction;
+        const minWidth = 1 / (TOTAL_HOURS * 4); // 15 min minimum
+
+        const onMove = (me) => {
+          let newEnd = (me.clientX - stripRect.left) / stripRect.width;
+          newEnd = Math.round(newEnd * TOTAL_HOURS * 4) / (TOTAL_HOURS * 4);
+          newEnd = Math.max(origStart + minWidth, Math.min(1, newEnd));
+          block.style.width = `${(newEnd - origStart) * 100}%`;
+          block._resizeEnd = newEnd;
+          showBlockPreview(origStart, newEnd);
+        };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.userSelect = '';
+          if (block._resizeEnd !== undefined) {
+            const allBlockers = loadBlockers();
+            allBlockers[idx].endFraction = block._resizeEnd;
+            saveBlockers(allBlockers);
+            delete block._resizeEnd;
+            focusedBlockerIdx = idx;
+            render();
+          }
+        };
+        document.body.style.userSelect = 'none';
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
 
       // Drag-to-move blocker horizontally; click (no drag) shows preview
       block.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.md-tl__blocker-remove')) return;
+        if (e.target.closest('.md-tl__blocker-handle')) return;
         e.stopPropagation();
         e.preventDefault();
         const blockerWidth = b.endFraction - b.startFraction;
@@ -510,6 +599,7 @@ export function render() {
         const startMouseX = e.clientX;
         const startLeft = b.startFraction;
         let didDrag = false;
+        const wasFocused = block.classList.contains('md-tl__blocker--focused');
 
         const onMove = (me) => {
           const dx = me.clientX - startMouseX;
@@ -520,20 +610,35 @@ export function render() {
           newStart = Math.max(0, Math.min(1 - blockerWidth, newStart));
           block.style.left = `${newStart * 100}%`;
           block._dragFraction = newStart;
+          if (wasFocused) {
+            showBlockPreview(newStart, newStart + blockerWidth);
+          }
         };
 
         const onUp = () => {
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
           document.body.style.userSelect = '';
-          if (block._dragFraction !== undefined) {
-            const allBlockers = loadBlockers();
-            allBlockers[idx].startFraction = block._dragFraction;
-            allBlockers[idx].endFraction = block._dragFraction + blockerWidth;
-            saveBlockers(allBlockers);
-            delete block._dragFraction;
-          }
-          if (!didDrag) {
+          if (didDrag) {
+            if (block._dragFraction !== undefined) {
+              const allBlockers = loadBlockers();
+              allBlockers[idx].startFraction = block._dragFraction;
+              allBlockers[idx].endFraction = block._dragFraction + blockerWidth;
+              saveBlockers(allBlockers);
+              delete block._dragFraction;
+            }
+            // Preserve focused state across re-render so closure data refreshes
+            if (wasFocused) focusedBlockerIdx = idx;
+            render();
+          } else {
+            // Toggle focused state (shows resize handles, hides remove icon)
+            document.querySelectorAll('.md-tl__blocker--focused').forEach(el => el.classList.remove('md-tl__blocker--focused'));
+            if (!wasFocused) {
+              block.classList.add('md-tl__blocker--focused');
+              focusedBlockerIdx = idx;
+            } else {
+              focusedBlockerIdx = null;
+            }
             showBlockPreview(b.startFraction, b.startFraction + blockerWidth);
           }
         };
@@ -544,6 +649,15 @@ export function render() {
       });
 
       blockerStrip.appendChild(block);
+
+      // Restore focused state after re-render
+      if (focusedBlockerIdx === idx) {
+        block.classList.add('md-tl__blocker--focused');
+        // Defer preview update until strip is in DOM
+        requestAnimationFrame(() => {
+          showBlockPreview(b.startFraction, b.endFraction);
+        });
+      }
     });
 
     blockerRow.appendChild(blockerStrip);
@@ -686,6 +800,18 @@ export function render() {
     blockPreview.style.width = `${width}px`;
     blockPreview.classList.remove('hidden');
 
+    // Position remove button centered, aligned with Now() label
+    if (focusedBlockerIdx !== null && blockerRemoveBtn) {
+      const centerX = left + width / 2;
+      blockerRemoveBtn.style.left = `${centerX}px`;
+      blockerRemoveBtn.style.transform = 'translateX(-50%)';
+      const nowLabel = wrapper.querySelector('.md-tl__now-label');
+      if (nowLabel) {
+        blockerRemoveBtn.style.top = `${nowLabel.offsetTop + nowLabel.offsetParent?.offsetTop}px`;
+      }
+      blockerRemoveBtn.classList.remove('hidden');
+    }
+
     const pickerTz = getPickerTz();
     const pickerRow = rowData.find(r => r.tz === pickerTz);
     if (pickerRow) {
@@ -712,6 +838,7 @@ export function render() {
 
   function hideBlockPreview() {
     blockPreview.classList.add('hidden');
+    if (blockerRemoveBtn) blockerRemoveBtn.classList.add('hidden');
   }
 
   // Save as Time Block button — independent element in wrapper (not inside pointer-events:none rangeBox)
@@ -728,6 +855,20 @@ export function render() {
     render();
   });
   wrapper.appendChild(blockerBtn);
+
+  // Remove Time Block button — shown below timeline when a block is focused
+  const blockerRemoveBtn = document.createElement('button');
+  blockerRemoveBtn.className = 'md-tl__blocker-remove-btn hidden';
+  blockerRemoveBtn.textContent = 'Remove';
+  blockerRemoveBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
+  blockerRemoveBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (focusedBlockerIdx === null) return;
+    removeBlocker(focusedBlockerIdx);
+    focusedBlockerIdx = null;
+    render();
+  });
+  wrapper.appendChild(blockerRemoveBtn);
 
   // Assemble: scroll panel wraps the strip wrapper
   scrollPanel.appendChild(wrapper);
@@ -941,12 +1082,20 @@ function setupDrag(wrapper, fixedPanel, refStrip, indicator, rangeBox, rowData, 
     rangeBox.style.left = `${left}px`;
     rangeBox.style.width = `${width}px`;
 
-    // Position blocker button centered over range
+    // Position blocker button centered over range, aligned to Time Blocks row
     if (blockerBtn) {
       blockerBtn.classList.remove('hidden');
       const btnLeft = left + width / 2;
       blockerBtn.style.left = `${btnLeft}px`;
       blockerBtn.style.transform = 'translateX(-50%)';
+      // Vertically align with blocker row
+      const blockerScrollRow = wrapper.querySelector('.md-tl__row--blocker');
+      if (blockerScrollRow) {
+        const rowTop = blockerScrollRow.offsetTop;
+        const rowHeight = blockerScrollRow.offsetHeight;
+        blockerBtn.style.top = `${rowTop + (rowHeight / 2)}px`;
+        blockerBtn.style.transform = 'translate(-50%, -50%)';
+      }
     }
 
     const pickerTz = getPickerTz();
@@ -1108,6 +1257,10 @@ function setupDrag(wrapper, fixedPanel, refStrip, indicator, rangeBox, rowData, 
   wrapper.querySelectorAll('.md-tl__strip').forEach(strip => {
     strip.addEventListener('mousedown', (e) => {
       e.preventDefault();
+      // Clear any focused time blocks
+      document.querySelectorAll('.md-tl__blocker--focused').forEach(el => el.classList.remove('md-tl__blocker--focused'));
+      focusedBlockerIdx = null;
+      hideBlockPreview();
       rangeBox.classList.add('hidden');
       if (blockerBtn) blockerBtn.classList.add('hidden');
       indicator.classList.remove('hidden');
@@ -1116,6 +1269,30 @@ function setupDrag(wrapper, fixedPanel, refStrip, indicator, rangeBox, rowData, 
       onStart(e.clientX);
     });
   });
+
+  // Click outside any block clears focused state (register once)
+  if (!window.__blockerFocusListenerAdded) {
+    window.__blockerFocusListenerAdded = true;
+    document.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.md-tl__blocker') && !e.target.closest('.md-tl__blocker-remove-btn')) {
+        document.querySelectorAll('.md-tl__blocker--focused').forEach(el => el.classList.remove('md-tl__blocker--focused'));
+        focusedBlockerIdx = null;
+        hideBlockPreview();
+      }
+    });
+    // Delete/Backspace removes focused time block
+    document.addEventListener('keydown', (e) => {
+      if (focusedBlockerIdx === null) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Don't intercept if user is typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+        e.preventDefault();
+        removeBlocker(focusedBlockerIdx);
+        focusedBlockerIdx = null;
+        render();
+      }
+    });
+  }
 
   // Restore saved range on re-render
   if (savedRange) {

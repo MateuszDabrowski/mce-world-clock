@@ -44,6 +44,8 @@
 
   /* Sizing */
   --toolbar-height: 60px;
+  --touch-target-min: 44px;
+  --border-radius-xs: 3px;
   --border-radius-sm: 6px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
@@ -63,6 +65,9 @@
   --font-size-lg: 16px;
   --font-size-xl: 20px;
   --line-height: 1.65;
+
+  /* Focus rings */
+  --focus-ring-primary: 0 0 0 3px rgba(29, 115, 201, 0.12);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
