@@ -1,0 +1,149 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
+  color: var(--text-primary);
+  background: var(--bg-app);
+}
+
+.md-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.md-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.md-content {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-app);
+}
+
+/* Shared scrollbar styling — thin track with subtle thumb */
+.md-content::-webkit-scrollbar,
+.md-sidebar__body::-webkit-scrollbar,
+.md-scripts__body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.md-content::-webkit-scrollbar-track,
+.md-sidebar__body::-webkit-scrollbar-track,
+.md-scripts__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.md-content::-webkit-scrollbar-thumb,
+.md-sidebar__body::-webkit-scrollbar-thumb,
+.md-scripts__body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.md-content::-webkit-scrollbar-thumb:hover,
+.md-sidebar__body::-webkit-scrollbar-thumb:hover,
+.md-scripts__body::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color-strong);
+}
+
+/* Skip navigation link — WCAG 2.4.1 */
+.md-skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--spacing-md);
+  z-index: 10000;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+}
+
+.md-skip-link:focus {
+  top: 0;
+}
+
+/* WCAG 2.4.7 — Visible focus indicators */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
+
+/* Notification toast */
+.md-toast {
+  position: fixed;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  background-color: var(--brand-red);
+  color: white;
+  padding: 12px 20px;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 3000;
+  box-shadow: var(--shadow-md);
+  border-radius: var(--border-radius-sm);
+  animation: md-toast-in 0.3s ease-out;
+}
+
+@keyframes md-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .md-main {
+    flex-direction: column;
+  }
+
+  .md-content {
+    flex: 1;
+    min-height: 0;
+  }
+}

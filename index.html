@@ -2,209 +2,455 @@
 <html lang="en" data-theme="light">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCE World Clock</title>
-    <link rel="stylesheet" href="styles.css?v=67">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="favicon.png?v=2">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Clockforce — timezone comparison and Salesforce Marketing Cloud date conversion tool">
+  <meta name="theme-color" content="#1D73C9">
+  <meta property="og:title" content="Clockforce">
+  <meta property="og:description" content="Timezone comparison, meeting planner and Salesforce Marketing Cloud date conversion tool">
+  <meta property="og:type" content="website">
+  <title>Clockforce</title>
+  <link rel="icon" type="image/png" href="favicon.png?v=3">
+
+  <!-- App CSS (order matters) -->
+  <link rel="stylesheet" href="css/variables.css?v=2">
+  <link rel="stylesheet" href="css/theme.css?v=2">
+  <link rel="stylesheet" href="css/layout.css?v=2">
+  <link rel="stylesheet" href="css/toolbar.css?v=2">
+  <link rel="stylesheet" href="css/sidebar.css?v=2">
+  <link rel="stylesheet" href="css/clock.css?v=2">
+  <link rel="stylesheet" href="css/timeline.css?v=2">
+  <link rel="stylesheet" href="css/modals.css?v=2">
 </head>
 
 <body>
-    <div id="notification-toast" class="hidden"></div>
-    <a href="https://mateuszdabrowski.pl" target="_blank" rel="noopener noreferrer" id="logo-link">
-        <img src="logo.png" alt="Mateusz Dabrowski" id="logo">
-    </a>
+  <!-- Skip navigation for keyboard/screen reader users -->
+  <a href="#clock-content" class="md-skip-link">Skip to main content</a>
 
-    <button id="theme-toggle" aria-label="Toggle Dark Mode">
-        <span class="icon moon">☾</span>
-        <span class="icon sun">☀</span>
-    </button>
+  <!-- Toast notification -->
+  <div id="notification-toast" class="md-toast hidden" role="status" aria-live="polite"></div>
 
-    <button id="display-toggle" aria-label="Toggle Analog/Digital">
-        <span class="icon analog">⏱</span>
-        <span class="icon digital">12:34</span>
-    </button>
+  <!-- App Layout -->
+  <div id="app" class="md-app">
+    <!-- Toolbar -->
+    <header id="toolbar" class="md-toolbar" role="banner">
+      <!-- Left: Logo + MCE dropdown + Display dropdown -->
+      <div class="md-toolbar__left">
+        <a href="https://mateuszdabrowski.pl" target="_blank" rel="noopener noreferrer" class="md-toolbar__brand">
+          <img src="logo.png" class="md-toolbar__brand-logo" alt="Clockforce logo" width="32" height="32">
+          <span class="md-toolbar__brand-text">Clockforce</span>
+        </a>
 
-    <div id="controls-container">
-        <div id="timezone-picker" class="hidden">
-            <input type="text" id="timezone-search" placeholder="Search timezone..." aria-label="Search timezone"
-                autofocus>
-            <ul id="timezone-list" role="listbox"></ul>
-        </div>
-        <button id="add-clock-btn" aria-label="Add Clock" class="fab">
-            <span class="plus-icon">+</span>
-        </button>
-    </div>
-    <div id="mce-container">
-        <div id="mce-options-list" class="hidden" role="menu">
-            <input type="text" id="mce-search" placeholder="Search MCE functions..." aria-label="Search MCE functions">
-            <ul id="mce-functions-list" role="listbox">
-                <li class="mce-opt" data-action="convert-date" role="menuitem">Convert MCE System Date</li>
-                <li class="mce-opt" data-action="generate-scripts" role="menuitem">Generate MCE Date Conversion Scripts
-                </li>
-            </ul>
-        </div>
-        <button id="mce-btn" aria-label="MCE Functions" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                <path
-                    d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-            </svg>
-        </button>
-        <button id="mce-reset-btn" class="hidden">
-            RESET TO NOW()
-        </button>
-    </div>
+        <div class="md-toolbar__group">
+          <!-- View mode segmented control (first item) -->
+          <div class="md-toolbar__view-toggle" role="radiogroup" aria-label="View mode">
+            <button id="btn-view-timeline" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Timeline view">Timeline</button>
+            <button id="btn-view-clocks" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Clock faces">Clocks</button>
+          </div>
 
-
-    <main id="clock-grid">
-        <!-- Clocks will be injected here -->
-    </main>
-
-    <!-- Inline Script Output Panel -->
-    <div id="script-output" class="hidden" role="region" aria-label="Script Output">
-        <div class="script-output-header">
-            <span>MCE CONVERSION SNIPPETS</span>
-            <button id="close-script-panel" aria-label="Close Script Panel">✕</button>
-        </div>
-        <div id="local-tz-notice" class="hidden">
-            <p>⚠️ <strong>SystemDateToLocalDate</strong> only works if this timezone is set as the local time for the
-                current MCE user.</p>
-            <button id="generate-dynamic-script">Generate Dynamic Script Instead</button>
-        </div>
-
-        <div class="script-grid">
-            <!-- SQL Section -->
-            <div class="script-section">
-                <div class="section-label">MCE SQL</div>
-                <div class="script-content">
-                    <code id="sql-text"></code>
-                    <button class="copy-btn" data-target="sql-text" aria-label="Copy SQL">COPY</button>
-                </div>
-            </div>
-
-            <!-- AMPScript Section -->
-            <div class="script-section">
-                <div class="section-label">AMPSCRIPT</div>
-                <div class="script-content">
-                    <code id="ampscript-text"></code>
-                    <button class="copy-btn" data-target="ampscript-text" aria-label="Copy AMPScript">COPY</button>
-                </div>
-            </div>
-
-            <!-- SSJS Section -->
-            <div class="script-section">
-                <div class="section-label">SSJS</div>
-                <div class="script-content">
-                    <code id="ssjs-text"></code>
-                    <button class="copy-btn" data-target="ssjs-text" aria-label="Copy SSJS">COPY</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MCE Inline Controls -->
-    <div id="mce-inline-controls" class="hidden" role="dialog" aria-label="MCE Date Converter">
-        <p class="mce-instruction">Insert Salesforce Marketing Cloud Engagement system date</p>
-        <div class="mce-input-group">
-            <input type="text" id="datetime-input" placeholder="e.g. Dec 23 2020 2:31PM" aria-label="System Date Input">
-            <button id="apply-time-btn">APPLY</button>
-        </div>
-        <span id="mce-feedback" aria-live="polite"></span>
-    </div>
-
-    <!-- Script Timezone Picker -->
-    <div id="script-timezone-picker" class="hidden" role="dialog" aria-label="Select Timezone for Script">
-        <p class="picker-instruction">Select timezone for conversion scripts</p>
-        <ul id="script-timezone-list" role="listbox"></ul>
-    </div>
-
-    <template id="clock-template">
-        <div class="clock-card">
-            <div class="clock-controls">
-                <!-- Home Icon -->
-                <svg class="home-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true">
-                    <path d="M12 3L2 12H5V20H19V12H22L12 3Z" fill="currentColor" />
-                </svg>
-                <!-- Salesforce Cloud Icon -->
-                <svg class="salesforce-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path
-                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-                </svg>
-                <!-- Remove Icon: Bauhaus Cross (Geometric) -->
-                <button class="remove-btn" title="Remove Clock" aria-label="Remove Clock">
-                    <svg class="remove-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true">
-                        <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" />
-                        <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" />
-                    </svg>
-                </button>
-            </div>
-            <div class="clock-container">
-                <!-- ... rest of template ... -->
-                <div class="clock-face">
-                    <div class="analog-face">
-                        <div class="marker hour-1"></div>
-                        <div class="marker hour-2"></div>
-                        <div class="marker hour-3"></div>
-                        <div class="marker hour-4"></div>
-                        <div class="marker hour-5"></div>
-                        <div class="marker hour-6"></div>
-                        <div class="marker hour-7"></div>
-                        <div class="marker hour-8"></div>
-                        <div class="marker hour-9"></div>
-                        <div class="marker hour-10"></div>
-                        <div class="marker hour-11"></div>
-                        <div class="marker hour-12"></div>
-
-                        <div class="date-display"></div>
-
-                        <div class="hand hour-hand"></div>
-                        <div class="hand minute-hand"></div>
-                        <div class="hand second-hand"></div>
-                        <div class="center-dot"></div>
-                    </div>
-
-                    <div class="digital-face hidden">
-                        <div class="digital-time">--:--</div>
-                        <div class="digital-date">DATE</div>
-                    </div>
-                </div>
-            </div>
-            <div class="timezone-display"></div>
-            <button class="probe-btn" title="Set time to check" aria-label="Set time to check">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="18" height="18">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                    <polyline points="12,7 12,12 16,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
+          <!-- Save/Load dropdown -->
+          <div class="md-toolbar__dropdown">
+            <button id="btn-saveload" class="md-toolbar__button" title="Save / Load" aria-haspopup="menu" aria-expanded="false">
+              <svg class="md-toolbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span>Save / Load</span>
+              <svg class="md-toolbar__chevron" aria-hidden="true" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
-            <div class="probe-picker hidden">
-                <div class="probe-header">Set time to check</div>
-                <div class="probe-input-group">
-                    <input type="time" class="probe-time-input" value="15:00" aria-label="Time to check">
-                    <button class="probe-apply-btn">GO</button>
-                </div>
-                <button class="probe-close" aria-label="Close time picker">&times;</button>
+            <div class="md-toolbar__menu" role="menu">
+              <button id="btn-save-browser" class="md-toolbar__menu-item" role="menuitem">
+                <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M371 40v136c0 10-8 19-19 19H139c-10 0-19-8-19-19V40H80a40 40 0 00-40 40v360a40 40 0 0040 40h360a40 40 0 0040-40V112l-72-72zm70 381c0 10-8 19-19 19H99c-10 0-19-8-19-19V254c0-10 8-19 19-19h323c10 0 19 8 19 19zM248 136c0 10 8 19 19 19h46c10 0 19-8 19-19V40h-83z"/></svg>
+                Save to Browser
+              </button>
+              <button id="btn-load-browser" class="md-toolbar__menu-item" role="menuitem">
+                <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15M270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"/></svg>
+                Load from Browser
+              </button>
+              <div class="md-toolbar__menu-separator" role="separator"></div>
+              <button id="btn-export-json" class="md-toolbar__menu-item" role="menuitem">
+                <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M485 310h-30c-8 0-15 7-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-8-7-15-15-15H35c-8 0-15 7-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-8-7-15-15-15m-235 66c6 6 15 6 21 0l135-135c6-6 6-15 0-21l-21-21c-6-6-15-6-21 0l-56 56c-6 6-17 2-17-7V35c-1-8-9-15-16-15h-30c-8 0-15 7-15 15v212c0 9-11 13-17 7l-56-56c-6-6-15-6-21 0l-21 22c-6 6-6 15 0 21z"/></svg>
+                Export as JSON
+              </button>
+              <button id="btn-import-json" class="md-toolbar__menu-item" role="menuitem">
+                <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15M270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"/></svg>
+                Import from JSON
+              </button>
+              <div class="md-toolbar__menu-separator" role="separator"></div>
+              <button id="btn-share-url" class="md-toolbar__menu-item" role="menuitem">
+                <svg class="md-toolbar__menu-icon" viewBox="0 0 520 520" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M272 417l-21-3-21-6c-4-1-9 0-12 3l-5 5a79 79 0 01-106 6 77 77 0 01-4-112l76-76c10-10 22-16 34-20a79 79 0 0174 20l10 13c4 7 13 8 18 2l28-28c4-4 4-10 1-15l-14-16a128 128 0 00-71-37 143 143 0 00-124 37l-73 73C9 316 5 402 56 456c53 58 143 59 198 4l25-25c7-5 2-17-7-18M456 58c-55-51-141-47-193 6l-23 22c-7 7-2 19 7 20 14 1 28 4 42 8 4 1 9 0 12-3l5-5c29-29 76-32 106-6 34 29 35 81 4 112l-76 76a85 85 0 01-34 20 79 79 0 01-74-20l-10-13c-4-7-13-8-18-2l-28 28c-4 4-4 10-1 15l14 16a130 130 0 0070 37 143 143 0 00124-37l76-76c56-55 54-145-3-198"/></svg>
+                Share as URL
+              </button>
             </div>
+          </div>
 
-            <div class="delete-overlay hidden">
-                <div class="delete-content">
-                    <div class="delete-question">Delete?</div>
-                    <div class="delete-actions">
-                        <button class="confirm-delete">YES</button>
-                        <button class="cancel-delete">NO</button>
-                    </div>
-                </div>
+          <!-- MCE Functions dropdown -->
+          <div class="md-toolbar__dropdown">
+            <button id="btn-mce" class="md-toolbar__button" title="MCE Functions" aria-haspopup="menu" aria-expanded="false">
+              <svg class="md-toolbar__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+              </svg>
+              <span>MCE Functions</span>
+              <svg class="md-toolbar__chevron" aria-hidden="true" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="md-toolbar__menu" role="menu">
+              <button id="btn-convert-date" class="md-toolbar__menu-item" role="menuitem">Convert MCE System Date</button>
+              <button id="btn-generate-scripts" class="md-toolbar__menu-item" role="menuitem">Generate Conversion Scripts</button>
             </div>
+          </div>
         </div>
-    </template>
+      </div>
 
-    <!-- Dialog removed, replaced by custom picker in controls-container -->
+      <!-- Center: removed, datetime picker is now floating -->
 
-    <script src="script.js?v=65"></script>
+      <!-- Right: About + Display + Theme + Sidebar toggles -->
+      <div class="md-toolbar__right">
+        <!-- Time format toggle -->
+        <div class="md-toolbar__view-toggle" role="radiogroup" aria-label="Time format">
+          <button id="btn-fmt-12h" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="12-hour format">12h</button>
+          <button id="btn-fmt-24h" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="24-hour format">24h</button>
+          <button id="btn-fmt-mix" class="md-toolbar__view-btn" role="radio" aria-checked="false" title="Local format per timezone">Mix</button>
+        </div>
+
+        <button id="btn-share-icon" class="md-toolbar__button md-toolbar__button--icon-only" title="Share as URL" aria-label="Share as URL">
+          <svg class="md-toolbar__icon" viewBox="0 0 520 520" fill="currentColor" aria-hidden="true">
+            <path d="M272 417l-21-3-21-6c-4-1-9 0-12 3l-5 5a79 79 0 01-106 6 77 77 0 01-4-112l76-76c10-10 22-16 34-20a79 79 0 0174 20l10 13c4 7 13 8 18 2l28-28c4-4 4-10 1-15l-14-16a128 128 0 00-71-37 143 143 0 00-124 37l-73 73C9 316 5 402 56 456c53 58 143 59 198 4l25-25c7-5 2-17-7-18M456 58c-55-51-141-47-193 6l-23 22c-7 7-2 19 7 20 14 1 28 4 42 8 4 1 9 0 12-3l5-5c29-29 76-32 106-6 34 29 35 81 4 112l-76 76a85 85 0 01-34 20 79 79 0 01-74-20l-10-13c-4-7-13-8-18-2l-28 28c-4 4-4 10-1 15l14 16a130 130 0 0070 37 143 143 0 00124-37l76-76c56-55 54-145-3-198"/>
+          </svg>
+        </button>
+
+        <button id="btn-about" class="md-toolbar__button md-toolbar__button--icon-only" title="About Clockforce" aria-label="About">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zM7.25 5a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0zM7.25 7h1.5v4.5h-1.5V7z"/>
+          </svg>
+        </button>
+
+        <button id="btn-theme" class="md-toolbar__button md-toolbar__button--icon-only" title="Toggle theme" aria-label="Toggle theme">
+          <svg class="md-toolbar__icon md-toolbar__icon--theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path class="md-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            <g class="md-icon-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g>
+          </svg>
+        </button>
+
+        <div class="md-toolbar__separator"></div>
+
+        <div class="md-toolbar__tz-search-wrap">
+          <input type="search" id="tz-navbar-search" class="md-toolbar__tz-search-input" placeholder="Search Timezones" aria-label="Search timezones" autocomplete="off">
+          <svg class="md-toolbar__tz-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <circle cx="7" cy="7" r="5"/>
+            <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <div class="md-toolbar__hamburger-wrap">
+        <button id="btn-hamburger" class="md-toolbar__button md-toolbar__button--icon-only md-toolbar__hamburger-btn" title="Menu" aria-label="Menu" aria-expanded="false">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <rect x="1" y="2.5" width="14" height="1.8" rx="0.9"/>
+            <rect x="1" y="7.1" width="14" height="1.8" rx="0.9"/>
+            <rect x="1" y="11.7" width="14" height="1.8" rx="0.9"/>
+          </svg>
+        </button>
+        <div id="hamburger-menu" class="md-toolbar__hamburger-menu">
+          <button class="md-toolbar__menu-item" data-action="convert-date">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+            Convert MCE Date
+          </button>
+          <button class="md-toolbar__menu-item" data-action="generate-scripts">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/></svg>
+            Generate Scripts
+          </button>
+          <div class="md-toolbar__menu-separator" role="separator"></div>
+          <button class="md-toolbar__menu-item" data-action="view-timeline">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" aria-hidden="true"><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="15" y2="8"/><line x1="1" y1="12" x2="15" y2="12"/><line x1="8" y1="2" x2="8" y2="14" stroke-width="2"/></svg>
+            Timeline View
+          </button>
+          <button class="md-toolbar__menu-item" data-action="view-clocks">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" aria-hidden="true"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10.5,9.5" stroke-linecap="round"/></svg>
+            Clocks View
+          </button>
+          <div class="md-toolbar__menu-separator" role="separator"></div>
+          <button class="md-toolbar__menu-item" data-action="fmt-12h">12h Format</button>
+          <button class="md-toolbar__menu-item" data-action="fmt-24h">24h Format</button>
+          <button class="md-toolbar__menu-item" data-action="fmt-mix">Mix Format</button>
+          <div class="md-toolbar__menu-separator" role="separator"></div>
+          <button class="md-toolbar__menu-item" data-action="toggle-tz">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0z"/></svg>
+            Toggle Timezones
+          </button>
+          <button class="md-toolbar__menu-item" data-action="toggle-scripts">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/></svg>
+            Toggle Scripts
+          </button>
+          <div class="md-toolbar__menu-separator" role="separator"></div>
+          <button class="md-toolbar__menu-item" data-action="theme">
+            <svg class="md-toolbar__menu-icon md-toolbar__icon--theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+              <path class="md-icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              <g class="md-icon-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g>
+          </svg>
+            Toggle Theme
+          </button>
+          <button class="md-toolbar__menu-item" data-action="about">
+            <svg class="md-toolbar__menu-icon" viewBox="0 0 16 16" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zM7.25 5a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0zM7.25 7h1.5v4.5h-1.5V7z"/></svg>
+            About
+          </button>
+          <button class="md-toolbar__menu-item md-toolbar__menu-item--danger" data-action="reset">
+            Reset to Now()
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content area -->
+    <div class="md-main">
+      <!-- Left sidebar — Scripts panel -->
+      <aside id="scripts-panel" class="md-scripts" aria-label="Script snippets">
+        <div class="md-drag-handle" data-target="scripts-panel"></div>
+        <div class="md-scripts__header">
+          <span class="md-scripts__title">MCE Conversion Snippets</span>
+          <button id="btn-close-scripts" class="md-toolbar__button md-toolbar__button--icon-only" title="Close scripts" aria-label="Close scripts">
+            <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+          </button>
+        </div>
+        <div class="md-scripts__body">
+          <!-- Local TZ notice -->
+          <div id="local-tz-notice" class="md-scripts__notice hidden">
+            <strong>SystemDateToLocalDate</strong> only works if this timezone is set as the local time for the current MCE user.
+            <button id="generate-dynamic-script" class="md-scripts__notice-btn">Generate Dynamic Script Instead</button>
+          </div>
+
+          <!-- No DST notice -->
+          <div id="no-dst-notice" class="md-scripts__notice md-scripts__notice--info hidden">
+            This timezone does <strong>not observe DST</strong> — snippets use a fixed offset. If you need DST-aware conversion (e.g. for audiences in DST regions), you can add DST boundaries.
+            <button id="add-dst-to-scripts" class="md-scripts__notice-btn">Add DST Offset to Snippets</button>
+          </div>
+
+          <!-- SQL -->
+          <div class="md-script-section">
+            <div class="md-script-section__label">MCE SQL</div>
+            <div class="md-script-section__content">
+              <code id="sql-text" class="md-script-section__code"></code>
+              <button class="md-script-section__copy" data-target="sql-text" aria-label="Copy SQL snippet">COPY</button>
+            </div>
+          </div>
+
+          <!-- AMPScript -->
+          <div class="md-script-section md-script-section--ampscript">
+            <div class="md-script-section__label">AMPScript</div>
+            <div class="md-script-section__content">
+              <code id="ampscript-text" class="md-script-section__code"></code>
+              <button class="md-script-section__copy" data-target="ampscript-text" aria-label="Copy AMPScript snippet">COPY</button>
+            </div>
+          </div>
+
+          <!-- SSJS -->
+          <div class="md-script-section md-script-section--ssjs">
+            <div class="md-script-section__label">SSJS</div>
+            <div class="md-script-section__content">
+              <code id="ssjs-text" class="md-script-section__code"></code>
+              <button class="md-script-section__copy" data-target="ssjs-text" aria-label="Copy SSJS snippet">COPY</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Clock grid (main content) -->
+      <main id="clock-content" class="md-content">
+        <!-- Floating datetime picker -->
+        <div id="datetime-picker" class="md-datetime-picker">
+          <div class="md-datetime-picker__tz-select">
+            <button id="datetime-tz-btn" class="md-datetime-picker__tz-btn" title="Change timezone for date/time">
+              <span id="datetime-tz-label">Local</span>
+              <svg width="8" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <div id="datetime-tz-menu" class="md-datetime-picker__tz-menu hidden">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          <input type="date" id="toolbar-date-input" class="md-datetime-picker__date-input" title="Set date" aria-label="Set date">
+          <input type="time" id="toolbar-time-input" class="md-datetime-picker__time-input" title="Set time" aria-label="Set time" step="60">
+          <button id="btn-apply-datetime" class="md-datetime-picker__apply-btn hidden" title="Apply date/time changes">Apply</button>
+          <button id="btn-reset" class="md-datetime-picker__reset-btn hidden" title="Reset to live time">Back to Now()</button>
+        </div>
+
+        <div id="clock-grid">
+          <!-- Clocks injected here -->
+        </div>
+        <div id="timeline-container" class="md-timeline hidden">
+          <!-- Rendered by timeline.js -->
+        </div>
+      </main>
+
+      <!-- Right sidebar — Timezone picker -->
+      <aside id="tz-panel" class="md-timezones md-timezones--hidden" aria-label="Timezone picker">
+        <div class="md-drag-handle" data-target="tz-panel"></div>
+        <div class="md-sidebar__header">
+          <span class="md-sidebar__header-title">Available Timezones</span>
+          <span id="tz-count" class="md-sidebar__category-count">0</span>
+          <button id="btn-close-tz" class="md-toolbar__button md-toolbar__button--icon-only md-sidebar__close-btn" title="Close timezone panel" aria-label="Close timezone panel">
+            <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+          </button>
+        </div>
+        <div class="md-sidebar__body">
+          <ul id="tz-list" class="md-sidebar__items" role="listbox">
+            <!-- Rendered by sidebar-tz.js -->
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Clock template -->
+  <template id="clock-template">
+    <div class="clock-card">
+      <div class="clock-controls">
+        <svg class="home-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3L2 12H5V20H19V12H22L12 3Z" fill="currentColor"/>
+        </svg>
+        <svg class="salesforce-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+        </svg>
+        <button class="remove-btn" title="Remove Clock" aria-label="Remove Clock">
+          <svg class="remove-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="clock-container">
+        <div class="clock-face">
+          <div class="analog-face">
+            <div class="marker hour-1"></div>
+            <div class="marker hour-2"></div>
+            <div class="marker hour-3"></div>
+            <div class="marker hour-4"></div>
+            <div class="marker hour-5"></div>
+            <div class="marker hour-6"></div>
+            <div class="marker hour-7"></div>
+            <div class="marker hour-8"></div>
+            <div class="marker hour-9"></div>
+            <div class="marker hour-10"></div>
+            <div class="marker hour-11"></div>
+            <div class="marker hour-12"></div>
+            <div class="date-display"></div>
+            <div class="hand hour-hand"></div>
+            <div class="hand minute-hand"></div>
+            <div class="hand second-hand"></div>
+            <div class="center-dot"></div>
+          </div>
+        </div>
+      </div>
+      <div class="digital-readout"></div>
+      <div class="timezone-display"></div>
+      <div class="delete-overlay hidden">
+        <div class="delete-content">
+          <div class="delete-question">Delete?</div>
+          <div class="delete-actions">
+            <button class="confirm-delete">YES</button>
+            <button class="cancel-delete">NO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- MCE Date Input Modal -->
+  <div id="mce-modal" class="md-modal md-modal--hidden" role="dialog" aria-modal="true" aria-labelledby="mce-modal-title">
+    <div id="mce-modal-overlay" class="md-modal__overlay"></div>
+    <div class="md-modal__dialog">
+      <div class="md-modal__header">
+        <h2 id="mce-modal-title" class="md-modal__title">Convert MCE System Date</h2>
+        <button id="btn-close-mce-modal" class="md-toolbar__button" aria-label="Close">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+      <div class="md-modal__body">
+        <p class="md-mce-instruction">Enter a Salesforce Marketing Cloud Engagement system date to lock all clocks to that point in time.</p>
+        <div class="md-mce-input-group">
+          <input type="text" id="mce-datetime-input" class="md-mce-input" placeholder="e.g. Dec 23 2020 2:31PM" aria-label="System Date Input">
+          <button id="mce-apply-btn" class="md-mce-apply-btn">APPLY</button>
+        </div>
+        <span id="mce-feedback" class="md-mce-feedback" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Timezone Picker Modal -->
+  <div id="script-picker-modal" class="md-modal md-modal--hidden" role="dialog" aria-modal="true" aria-labelledby="script-picker-title">
+    <div id="script-picker-overlay" class="md-modal__overlay"></div>
+    <div class="md-modal__dialog">
+      <div class="md-modal__header">
+        <h2 id="script-picker-title" class="md-modal__title">Select Timezone for Scripts</h2>
+        <button id="btn-close-script-picker" class="md-toolbar__button" aria-label="Close">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+      <div class="md-modal__body">
+        <ul id="script-tz-list" class="md-script-tz-list" role="listbox">
+          <!-- Populated by toolbar.js -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div id="about-modal" class="md-modal md-modal--hidden" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+    <div id="about-modal-overlay" class="md-modal__overlay"></div>
+    <div class="md-modal__dialog md-about">
+      <div class="md-modal__header">
+        <h2 id="about-modal-title" class="md-modal__title">About Clockforce</h2>
+        <button id="btn-close-about" class="md-toolbar__button" aria-label="Close">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+      <div class="md-modal__body md-about__body">
+        <div class="md-about__logo">
+          <img src="logo.png" alt="Clockforce" width="64" height="64">
+        </div>
+        <p class="md-about__tagline">Meeting time finder, timezone comparison & MCE date conversion tool</p>
+        <div class="md-about__info">
+          <p>Find the best meeting times across timezones with the interactive timeline view. Drag to select time ranges, save Time Blocks and click them to preview across all timezones. Compare sunrise/sunset across locations. Switch between Timeline and Clocks views with 12h/24h/Mix time format support.</p>
+          <p>Use the floating datetime picker to lock all clocks to any point in time in any timezone. Generate production-ready date conversion scripts for <a href="https://www.salesforce.com/products/marketing-cloud/" target="_blank" rel="noopener">Salesforce Marketing Cloud Engagement</a> in SQL, AMPScript, and SSJS with DST-aware logic.</p>
+          <p>Save and load configurations, share via URL, and export/import as JSON. Built with vanilla JavaScript and the <a href="https://www.lightningdesignsystem.com/" target="_blank" rel="noopener">Salesforce Lightning Design System</a>.</p>
+        </div>
+        <div class="md-about__meta">
+          <span class="md-about__version">v2.1.0</span>
+          <span class="md-about__separator">&middot;</span>
+          <a href="https://mateuszdabrowski.pl" target="_blank" rel="noopener" class="md-about__link">mateuszdabrowski.pl</a>
+          <span class="md-about__separator">&middot;</span>
+          <a href="https://github.com/MateuszDabrowski/clockforce" target="_blank" rel="noopener" class="md-about__link">GitHub</a>
+          <span class="md-about__separator">&middot;</span>
+          <a href="https://www.linkedin.com/in/mateusz-dabrowski-pl/" target="_blank" rel="noopener" class="md-about__link">Feedback</a>
+        </div>
+        <div class="md-about__meta md-about__meta--license">
+          <span class="md-about__license-text">Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener" class="md-about__link">CC BY-NC-SA 4.0</a></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load from Browser Modal -->
+  <div id="load-modal" class="md-modal md-modal--hidden" role="dialog" aria-modal="true" aria-labelledby="load-modal-title">
+    <div id="load-modal-overlay" class="md-modal__overlay"></div>
+    <div class="md-modal__dialog md-modal__dialog--wide">
+      <div class="md-modal__header">
+        <h2 id="load-modal-title" class="md-modal__title">Load Configuration</h2>
+        <button id="btn-close-load-modal" class="md-toolbar__button" aria-label="Close">
+          <svg class="md-toolbar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+      <div id="load-modal-list" class="md-modal__body md-modal__row-list">
+        <!-- Populated by saveload.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden file input for JSON import -->
+  <input type="file" id="json-import-input" accept=".json" class="hidden" aria-hidden="true">
+
+  <!-- App script as ES module -->
+  <script type="module" src="js/app.js?v=2"></script>
 </body>
 
 </html>

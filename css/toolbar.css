@@ -1,0 +1,621 @@
+/* Toolbar — matches Diagramforce navbar style */
+
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--toolbar-height);
+  padding: 0 var(--spacing-lg);
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.md-toolbar__left,
+.md-toolbar__center,
+.md-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.md-toolbar__left,
+.md-toolbar__right {
+  flex-shrink: 0;
+}
+
+/* Center no longer used — datetime picker is floating */
+
+/* Brand — logo + text */
+.md-toolbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: var(--spacing-md);
+  white-space: nowrap;
+  color: var(--color-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.md-toolbar__brand:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.md-toolbar__brand > * {
+  pointer-events: none;
+}
+
+.md-toolbar__brand-logo {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.md-toolbar__brand-text {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.md-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.md-toolbar__separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.md-toolbar__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  font-family: var(--font-family);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  min-width: 32px;
+  min-height: 32px;
+  line-height: 1;
+}
+
+.md-toolbar__button:hover:not(:disabled) {
+  background: var(--toolbar-button-hover);
+  color: var(--text-primary);
+}
+
+.md-toolbar__button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.md-toolbar__button--active {
+  background: var(--toolbar-button-active);
+  color: var(--color-primary);
+}
+
+.md-toolbar__button--icon-only {
+  padding: 4px;
+  gap: 0;
+}
+
+/* Theme toggle — circular */
+#btn-theme {
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+#btn-theme:hover:not(:disabled) {
+  background: var(--toolbar-button-hover);
+  color: var(--color-primary);
+}
+
+.md-toolbar__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Timezone search input in toolbar */
+.md-toolbar__tz-search-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.md-toolbar__tz-search-input {
+  width: 180px;
+  padding: 5px 12px 5px 30px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  outline: none;
+  min-height: 32px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), width var(--transition-normal);
+}
+
+.md-toolbar__tz-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.md-toolbar__tz-search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(29, 115, 201, 0.12);
+  width: 220px;
+}
+
+[data-theme="dark"] .md-toolbar__tz-search-input:focus {
+  box-shadow: 0 0 0 3px rgba(218, 78, 85, 0.12);
+}
+
+.md-toolbar__tz-search-wrap .md-toolbar__tz-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.md-toolbar__tz-search-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+#btn-theme .md-toolbar__icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Theme toggle icon — moon/sun swap */
+.md-toolbar__icon--theme {
+  fill: none;
+}
+
+[data-theme="dark"] .md-icon-sun { display: none; }
+[data-theme="dark"] .md-icon-moon { display: inline; }
+[data-theme="light"] .md-icon-sun { display: inline; }
+[data-theme="light"] .md-icon-moon { display: none; }
+
+/* Dropdown menus */
+.md-toolbar__dropdown {
+  position: relative;
+}
+
+.md-toolbar__chevron {
+  width: 8px;
+  height: 6px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.md-toolbar__menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  padding: 4px 0;
+}
+
+.md-toolbar__dropdown.md-toolbar__dropdown--open .md-toolbar__menu {
+  display: block;
+}
+
+.md-toolbar__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.md-toolbar__menu-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.md-toolbar__menu-item:hover:not(:disabled) {
+  background: var(--toolbar-button-hover);
+  color: var(--text-primary);
+}
+
+.md-toolbar__menu-item:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.md-toolbar__menu-item--danger {
+  color: var(--brand-red);
+}
+
+.md-toolbar__menu-separator {
+  border-top: 1px solid var(--border-color);
+  margin: 4px 0;
+}
+
+/* View mode segmented control */
+.md-toolbar__view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+.md-toolbar__view-btn {
+  padding: 4px 12px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.md-toolbar__view-btn:not(:last-child) {
+  border-right: 1px solid var(--border-color);
+}
+
+.md-toolbar__view-btn:hover {
+  background: var(--sidebar-item-hover);
+  color: var(--text-primary);
+}
+
+.md-toolbar__view-btn--active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.md-toolbar__view-btn--active:hover {
+  background-color: var(--color-primary);
+  color: white;
+  opacity: 0.9;
+}
+
+/* Floating datetime picker — positioned over content area */
+.md-datetime-picker {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  margin: 0 auto;
+  width: fit-content;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.md-datetime-picker__tz-select {
+  position: relative;
+}
+
+.md-datetime-picker__tz-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-app);
+  color: var(--color-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast);
+}
+
+.md-datetime-picker__tz-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.md-datetime-picker__tz-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 1100;
+  padding: 4px 0;
+}
+
+.md-datetime-picker__tz-option {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.md-datetime-picker__tz-option:hover {
+  background: var(--toolbar-button-hover);
+  color: var(--text-primary);
+}
+
+.md-datetime-picker__tz-option--active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.md-datetime-picker__date-input,
+.md-datetime-picker__time-input {
+  padding: 3px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.md-datetime-picker__date-input:focus,
+.md-datetime-picker__time-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.md-datetime-picker__date-input {
+  width: 130px;
+}
+
+.md-datetime-picker__time-input {
+  width: 90px;
+}
+
+.md-datetime-picker__time-input[type="text"] {
+  width: 90px;
+}
+
+/* Apply button */
+.md-datetime-picker__apply-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background-color: var(--brand-blue);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.md-datetime-picker__apply-btn:hover {
+  background-color: #155da0;
+  transform: scale(1.02);
+}
+
+/* Reset button */
+.md-datetime-picker__reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background-color: var(--brand-red);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.md-datetime-picker__reset-btn:hover {
+  background-color: #b73a3f;
+  transform: scale(1.02);
+}
+
+/* Mobile-only elements */
+.md-toolbar__mobile-only {
+  display: none !important;
+}
+
+/* Hamburger menu */
+.md-toolbar__hamburger-wrap {
+  display: none;
+  position: relative;
+}
+
+.md-toolbar__hamburger-btn {
+  display: flex;
+}
+
+.md-toolbar__hamburger-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 200px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 300;
+  padding: 4px 0;
+}
+
+.md-toolbar__hamburger-menu .md-toolbar__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: var(--font-size-md);
+}
+
+.md-toolbar__hamburger-menu .md-toolbar__menu-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+  width: 20px;
+  height: 20px;
+}
+
+.md-toolbar__hamburger-wrap--open .md-toolbar__hamburger-menu {
+  display: block;
+}
+
+/* Mobile toolbar */
+@media (max-width: 768px) {
+  .md-toolbar {
+    height: 48px;
+    padding: 0 4px;
+    gap: 0;
+    justify-content: flex-start;
+  }
+
+  .md-toolbar__hamburger-wrap {
+    display: block;
+    flex-shrink: 0;
+    order: 1;
+  }
+
+  .md-toolbar__left {
+    order: 3;
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .md-toolbar__right {
+    order: 4;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  .md-toolbar__brand {
+    margin-right: 0;
+    gap: 6px;
+  }
+
+  .md-toolbar__brand-logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .md-toolbar__brand-text {
+    font-size: var(--font-size-md);
+  }
+
+  /* Hide main toolbar sections on mobile */
+  .md-toolbar__left > .md-toolbar__group,
+  .md-toolbar__left > .md-toolbar__dropdown,
+  .md-toolbar__left > .md-toolbar__separator,
+  .md-toolbar__right > #btn-theme,
+  .md-toolbar__right > #btn-about,
+  .md-toolbar__right > .md-toolbar__tz-search-wrap {
+    display: none !important;
+  }
+
+  /* Show mobile-only buttons */
+  .md-toolbar__mobile-only {
+    display: inline-flex !important;
+  }
+
+  /* Touch-friendly targets */
+  .md-toolbar__right .md-toolbar__button,
+  .md-toolbar__hamburger-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .md-toolbar__right .md-toolbar__icon,
+  .md-toolbar__hamburger-btn .md-toolbar__icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Hamburger menu from left */
+  .md-toolbar__hamburger-menu {
+    left: 0;
+    right: auto;
+  }
+}
