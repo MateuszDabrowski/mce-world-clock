@@ -1,7 +1,7 @@
 /* MCE date conversion and script generation */
 
-import { getTzByIana, getOffsetMinutes } from './timezones.js';
-import * as clocks from './clocks.js';
+import { getTzByIana, getOffsetMinutes } from './timezones.js?v=2.3.0';
+import * as clocks from './clocks.js?v=2.3.0';
 
 let scriptsPanel = null;
 

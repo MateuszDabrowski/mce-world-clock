@@ -1,12 +1,12 @@
 /* Toolbar — dropdown menus, hamburger menu, button wiring */
 
-import * as clocks from './clocks.js';
-import * as sidebarTz from './sidebar-tz.js';
-import * as sidebarScripts from './sidebar-scripts.js';
-import * as mce from './mce.js';
-import * as timeline from './timeline.js';
-import * as saveload from './saveload.js';
-import { getOffsetString, timezoneDatabase, getTzByIana } from './timezones.js';
+import * as clocks from './clocks.js?v=2.3.0';
+import * as sidebarTz from './sidebar-tz.js?v=2.3.0';
+import * as sidebarScripts from './sidebar-scripts.js?v=2.3.0';
+import * as mce from './mce.js?v=2.3.0';
+import * as timeline from './timeline.js?v=2.3.0';
+import * as saveload from './saveload.js?v=2.3.0';
+import { getOffsetString, timezoneDatabase, getTzByIana } from './timezones.js?v=2.3.0';
 
 let toastFn = null;
 let _setViewFn = null;

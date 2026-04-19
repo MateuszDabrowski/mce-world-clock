@@ -1,9 +1,9 @@
 /* Right sidebar — Timezone picker with navbar search */
 
-import { getProcessedTimezones, findMatchingAlias, findMatchingAbbr } from './timezones.js';
-import * as clocks from './clocks.js';
-import { getCustomName, saveCustomName } from './persistence.js';
-import { setupDragHandle } from './drag-handle.js';
+import { getProcessedTimezones, findMatchingAlias, findMatchingAbbr } from './timezones.js?v=2.3.0';
+import * as clocks from './clocks.js?v=2.3.0';
+import { getCustomName, saveCustomName } from './persistence.js?v=2.3.0';
+import { setupDragHandle } from './drag-handle.js?v=2.3.0';
 
 // SVG icons
 const ICON_ADD = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>';
