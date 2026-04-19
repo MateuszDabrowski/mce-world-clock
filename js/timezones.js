@@ -24,8 +24,10 @@ export const timezoneDatabase = [
   { iana: 'Europe/Warsaw', windows: 'Central European Standard Time', label: 'Poland / Warsaw', aliases: ['Krakow', 'Wroclaw', 'Gdansk', 'Poznan', 'Prague', 'Budapest', 'Bratislava', 'Ljubljana', 'Zagreb', 'Belgrade'] },
   { iana: 'Europe/Athens', windows: 'GTB Standard Time', label: 'Greece / Athens', aliases: ['Thessaloniki', 'Bucharest', 'Sofia', 'Istanbul', 'Helsinki', 'Tallinn', 'Riga', 'Vilnius', 'Kyiv'] },
   { iana: 'Europe/Moscow', windows: 'Russian Standard Time', label: 'Russia / Moscow', aliases: ['Saint Petersburg', 'Minsk'] },
+  { iana: 'Africa/Lagos', windows: 'W. Central Africa Standard Time', label: 'Nigeria / Lagos', aliases: ['Abuja', 'Kano', 'Ibadan', 'Douala', 'Yaounde', 'Kinshasa', 'Luanda', 'Libreville', 'Bangui', 'Ndjamena', 'Niamey', 'Porto-Novo', 'Malabo', 'West Africa Time'] },
   { iana: 'Africa/Cairo', windows: 'Egypt Standard Time', label: 'Egypt / Cairo', aliases: ['Alexandria', 'Giza'] },
   { iana: 'Africa/Johannesburg', windows: 'South Africa Standard Time', label: 'South Africa / Johannesburg', aliases: ['Cape Town', 'Durban', 'Pretoria', 'Harare', 'Maputo'] },
+  { iana: 'Africa/Nairobi', windows: 'E. Africa Standard Time', label: 'Kenya / Nairobi', aliases: ['Mombasa', 'Kisumu', 'Addis Ababa', 'Dar es Salaam', 'Kampala', 'Mogadishu', 'Asmara', 'Djibouti', 'Khartoum', 'Juba', 'Antananarivo', 'East Africa Time'] },
   { iana: 'Asia/Jerusalem', windows: 'Israel Standard Time', label: 'Israel / Jerusalem', aliases: ['Tel Aviv', 'Haifa'] },
   { iana: 'Asia/Riyadh', windows: 'Arab Standard Time', label: 'Saudi Arabia / Riyadh', aliases: ['Jeddah', 'Mecca', 'Kuwait City', 'Doha', 'Bahrain', 'Manama'] },
   { iana: 'Asia/Dubai', windows: 'Arabian Standard Time', label: 'UAE / Dubai', aliases: ['Abu Dhabi', 'Sharjah', 'Muscat'] },
@@ -87,6 +89,11 @@ export function getOffsetString(timeZone, referenceDate = new Date()) {
 
 // Pre-processed timezone list sorted by offset
 export function getProcessedTimezones() {
+  // Probe winter and summer to collect both standard and daylight abbreviations (e.g. CET/CEST, EST/EDT)
+  const year = new Date().getFullYear();
+  const winterDate = new Date(year, 0, 15);
+  const summerDate = new Date(year, 6, 15);
+
   return timezoneDatabase.map(tz => {
     const offsetMins = getOffsetMinutes(tz.iana);
     const sign = offsetMins >= 0 ? '+' : '-';
@@ -97,14 +104,23 @@ export function getProcessedTimezones() {
 
     const aliasStr = (tz.aliases || []).join(' ').toLowerCase();
 
+    const winterAbbr = getTimezoneShortCode(tz.iana, winterDate);
+    const summerAbbr = getTimezoneShortCode(tz.iana, summerDate);
+    const abbrList = [...new Set([winterAbbr, summerAbbr])]
+      .filter(a => a && !a.startsWith('GMT'));
+    // Mark abbreviations with ^caret^ tokens so exact abbrev matches can be prioritised
+    const abbrTokens = abbrList.map(a => `^${a.toLowerCase()}^`).join(' ');
+    const abbrs = abbrList.join(' ');
+
     return {
       id: tz.iana,
       city: tz.label,
       windows: tz.windows,
       aliases: tz.aliases || [],
+      abbrs: abbrList,
       offsetMins,
       offsetLabel,
-      searchStr: (tz.label + " " + tz.iana + " " + tz.windows + " " + aliasStr).toLowerCase(),
+      searchStr: (tz.label + " " + tz.iana + " " + tz.windows + " " + aliasStr + " " + abbrs + " " + abbrTokens).toLowerCase(),
       original: tz
     };
   }).sort((a, b) => a.offsetMins - b.offsetMins);
@@ -115,6 +131,20 @@ export function findMatchingAlias(aliases, filter) {
   if (!filter || !aliases || !aliases.length) return null;
   const lower = filter.toLowerCase();
   return aliases.find(a => a.toLowerCase().includes(lower)) || null;
+}
+
+// Find which abbreviation matched a search term (e.g. "CEST" → "CEST")
+export function findMatchingAbbr(tzId, filter, ref = new Date()) {
+  if (!filter || !tzId) return null;
+  const lower = filter.toLowerCase();
+  const year = ref.getFullYear();
+  const winterDate = new Date(year, 0, 15);
+  const summerDate = new Date(year, 6, 15);
+  const candidates = [
+    getTimezoneShortCode(tzId, winterDate),
+    getTimezoneShortCode(tzId, summerDate),
+  ].filter(a => a && !a.startsWith('GMT'));
+  return candidates.find(a => a.toLowerCase().includes(lower)) || null;
 }
 
 // Common long-name-to-abbreviation map for when Intl returns GMT+X

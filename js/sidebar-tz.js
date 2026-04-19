@@ -1,6 +1,6 @@
 /* Right sidebar — Timezone picker with navbar search */
 
-import { getProcessedTimezones, findMatchingAlias } from './timezones.js';
+import { getProcessedTimezones, findMatchingAlias, findMatchingAbbr } from './timezones.js';
 import * as clocks from './clocks.js';
 import { getCustomName, saveCustomName } from './persistence.js';
 import { setupDragHandle } from './drag-handle.js';
@@ -73,8 +73,19 @@ function renderTimezoneList(filter = '') {
   const usedTimezones = clocks.getClocks().map(c => c.timezone);
   let visibleCount = 0;
 
+  // If query looks like a timezone abbreviation (2-5 letters), prefer exact-abbreviation matches
+  const abbrQuery = /^[a-zA-Z]{2,5}$/.test(filter) ? `^${lowerFilter}^` : null;
+  const hasAbbrMatches = abbrQuery && processedTimezones.some(d => d.searchStr.includes(abbrQuery));
+
   processedTimezones.forEach(data => {
-    if (lowerFilter && !data.searchStr.includes(lowerFilter)) return;
+    if (lowerFilter) {
+      if (hasAbbrMatches) {
+        // When a query matches actual abbreviations, restrict results to those only
+        if (!data.searchStr.includes(abbrQuery)) return;
+      } else if (!data.searchStr.includes(lowerFilter)) {
+        return;
+      }
+    }
 
     const isUsed = usedTimezones.includes(data.id);
     const clockIndex = isUsed ? clocks.getClocks().findIndex(c => c.timezone === data.id) : -1;
@@ -110,13 +121,15 @@ function renderTimezoneList(filter = '') {
     labelSpan.textContent = data.city;
     labelWrap.appendChild(labelSpan);
 
-    // Check for alias match — show "Shared by {searchTerm}" note
-    if (lowerFilter) {
+    // Check for alias or abbreviation match — show "Shared by {searchTerm}" note
+    if (lowerFilter && !data.city.toLowerCase().includes(lowerFilter)) {
       const matchedAlias = findMatchingAlias(data.aliases, filter);
-      if (matchedAlias && !data.city.toLowerCase().includes(lowerFilter)) {
+      const matchedAbbr = matchedAlias ? null : findMatchingAbbr(data.id, filter);
+      const match = matchedAlias || matchedAbbr;
+      if (match) {
         const aliasNote = document.createElement('span');
         aliasNote.className = 'md-tz-item__alias';
-        aliasNote.textContent = `Shared by ${matchedAlias}`;
+        aliasNote.textContent = `Shared by ${match}`;
         labelWrap.appendChild(aliasNote);
       }
     }
